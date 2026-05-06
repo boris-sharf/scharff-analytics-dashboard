@@ -257,7 +257,7 @@ async function loadData(){
         tipo:        r['Tipo']?.select?.name||'—',
         estado:      cleanSel(r['Estado']?.select?.name)||'Backlog',
         prioridad:   cleanSel(r['Prioridad']?.select?.name)||'Media',
-        asignado:    r['Asignado a']?.rich_text?.[0]?.plain_text||'—',
+        asignado:    r['Asignado a']?.people?.[0]?.name || r['Asignado a']?.rich_text?.[0]?.plain_text || '—',
         colaboradores:r['Colaboradores']?.rich_text?.[0]?.plain_text||'',
         deadline:    r['Deadline']?.date?.start||'',
         recurrencia: r['Recurrencia']?.select?.name||'Única',
