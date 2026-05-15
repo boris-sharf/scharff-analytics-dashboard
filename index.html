@@ -709,7 +709,7 @@ async function generarConclusiones(){
   const prompt=`Eres el analista de datos del Holding Scharff. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño, (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 180 palabras en total.`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://admin-inlog.app.n8n.cloud/webhook/claude-proxy',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
