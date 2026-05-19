@@ -788,7 +788,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
     kpis:d.kpis.sort((a,b)=>{const pa=a[1].pct===null?-1:a[1].pct;const pb=b[1].pct===null?-1:b[1].pct;return pb-pa;}).map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))
   }))));
 
-  const cx=175,cy=155,R=108;
+  const cx=175,cy=165,R=130;
   const n=PILARES.length;
   const angles=PILARES.map((_,i)=>(Math.PI*2*i/n)-Math.PI/2);
   function pt(r,a){return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
@@ -819,7 +819,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
   const radarHtml=`<div class="radar-section" style="margin-bottom:0;">
     <div class="radar-lbl"><span class="radar-dot"></span>Desempeño por pilar</div>
     <div style="position:relative;display:flex;justify-content:center;">
-      <svg id="sc-radar-svg" viewBox="0 0 350 310" width="100%" height="260" style="overflow:visible;">
+      <svg id="sc-radar-svg" viewBox="0 0 350 330" width="100%" height="300" style="overflow:visible;">
         ${rings}${axes}
         <path d="${polyD}" fill="rgba(13,27,134,0.08)" stroke="#0d1b86" stroke-width="2"/>
         ${circles}${labels}${pctLabels}
