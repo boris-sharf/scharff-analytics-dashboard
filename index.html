@@ -1059,7 +1059,6 @@ function buildScorecard(){
     // KPIs con gráfico evolutivo (solo QEMA)
     const CHART_KPIS={
       'Valor':['Revenue','ADR','% Ocupación'],
-      'Cliente Feliz':['Rating OTAs'],
       'Salud':['Payroll/Ingresos']
     };
     const chartKpisForPilar=(scEmp==='QEMA'&&CHART_KPIS[pilar])||[];
@@ -1071,7 +1070,6 @@ function buildScorecard(){
     // Construir gráficos evolutivos
     let chartsHtml='';
     if(kpisGrafico.length>0){
-      // Obtener todos los meses del año (ignorar filtro de mes para gráfico)
       const empData=SC_EMPRESAS[scEmp];
       let yDataAll;
       if(scEmp==='QEMA'&&scLoc!=='consolidado'&&empData.yearsLoc?.[scLoc]?.[scYear]){
@@ -1080,8 +1078,9 @@ function buildScorecard(){
         yDataAll=empData.years[scYear]||{};
       }
       const mesesAll=SC_MESES_ORD.filter(m=>yDataAll[m]);
+      const isRow=(pilar==='Valor');
 
-      kpisGrafico.forEach(([k,v])=>{
+      const chartItems=kpisGrafico.map(([k,v])=>{
         const cid='evo-'+k.replace(/[^a-z0-9]/gi,'_')+'-'+scEmp+'-'+scLoc+'-'+scYear;
         const realData=mesesAll.map(m=>yDataAll[m]?.[k]?.r??null);
         const targetData=mesesAll.map(m=>yDataAll[m]?.[k]?.t??null);
@@ -1089,21 +1088,26 @@ function buildScorecard(){
         const realStr=JSON.stringify(realData);
         const targetStr=JSON.stringify(targetData);
         const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
-        chartsHtml+=`
-          <div style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#888;font-weight:600;">${k}${yUnit?` (${yUnit})`:''}</span>
-              <div style="display:flex;gap:12px;">
-                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:18px;height:2px;background:#69231e;"></div>Real</div>
-                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:18px;border-top:2px dashed #222;"></div>Target</div>
-              </div>
+        return`<div style="background:#fff;border-radius:4px;padding:12px 14px;${isRow?'flex:1;min-width:0;':'margin-bottom:12px;'}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#888;font-weight:600;">${k}${yUnit?` (${yUnit})`:''}</span>
+            <div style="display:flex;gap:10px;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#666;"><div style="width:14px;height:2px;background:#69231e;border-radius:1px;"></div>Real</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#666;"><div style="width:14px;border-top:2px dashed #222;"></div>Target</div>
             </div>
-            <div style="position:relative;width:100%;height:130px;">
-              <canvas id="${cid}" class="evo-chart" role="img" aria-label="${k} real vs target ${scYear}"
-                data-labels='${labelsStr}' data-real='${realStr}' data-target='${targetStr}'></canvas>
-            </div>
-          </div>`;
-      });
+          </div>
+          <div style="position:relative;width:100%;height:120px;">
+            <canvas id="${cid}" class="evo-chart" role="img" aria-label="${k} real vs target ${scYear}"
+              data-labels='${labelsStr}' data-real='${realStr}' data-target='${targetStr}'></canvas>
+          </div>
+        </div>`;
+      }).join(isRow?'':'\n');
+
+      if(isRow){
+        chartsHtml=`<div style="display:flex;gap:10px;margin-bottom:10px;">${chartItems}</div>`;
+      } else {
+        chartsHtml=chartItems;
+      }
     }
 
     // Construir cards
@@ -1116,11 +1120,18 @@ function buildScorecard(){
     }).join('');
 
     const cardsSection=kpisCard.length>0?`
-      ${chartsHtml.length>0?`<div style="font-size:10px;color:#aaa;letter-spacing:.6px;text-transform:uppercase;font-weight:600;margin:8px 0 6px;">Otros KPIs de ${pilar}</div>`:''}
-      <div class="sc-kgrid">${cells}</div>`:``;
+      ${chartsHtml.length>0&&pilar!=='Salud'?`<div style="font-size:10px;color:#aaa;letter-spacing:.6px;text-transform:uppercase;font-weight:600;margin:8px 0 6px;">Otros KPIs de ${pilar}</div>`:''}
+      ${pilar==='Salud'&&chartsHtml.length>0
+        ?`<div style="display:flex;gap:10px;align-items:stretch;">
+            <div style="flex:0 0 80%;">${chartsHtml}</div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:7px;">${cells}</div>
+           </div>`
+        :`<div class="sc-kgrid">${cells}</div>`
+      }`:`${chartsHtml.length>0&&pilar==='Salud'?chartsHtml:''}`;
 
     const gc='sc-kgrid';
-    html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div>${chartsHtml}${cardsSection}</div>`;
+    const pillarContent=pilar==='Salud'?cardsSection:`${chartsHtml}${cardsSection}`;
+    html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div>${pillarContent}</div>`;
   }
 
   html+=`
