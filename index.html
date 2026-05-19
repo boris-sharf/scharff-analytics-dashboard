@@ -1099,26 +1099,9 @@ function buildScorecard(){
               </div>
             </div>
             <div style="position:relative;width:100%;height:130px;">
-              <canvas id="${cid}" role="img" aria-label="${k} real vs target ${scYear}"></canvas>
+              <canvas id="${cid}" class="evo-chart" role="img" aria-label="${k} real vs target ${scYear}"
+                data-labels='${labelsStr}' data-real='${realStr}' data-target='${targetStr}'></canvas>
             </div>
-            <script>
-            (function(){
-              const ctx=document.getElementById('${cid}');if(!ctx)return;
-              if(ctx._chart){ctx._chart.destroy();}
-              const ch=new Chart(ctx,{
-                type:'line',
-                data:{
-                  labels:${labelsStr},
-                  datasets:[
-                    {label:'Real',data:${realStr},borderColor:'#69231e',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#69231e',tension:0.3,spanGaps:true},
-                    {label:'Target',data:${targetStr},borderColor:'#222',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:3,pointBackgroundColor:'#222',tension:0.3,spanGaps:true}
-                  ]
-                },
-                options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#f5f5f5'}}}}
-              });
-              ctx._chart=ch;
-            })();
-            <\/script>
           </div>`;
       });
     }
@@ -1237,7 +1220,22 @@ function renderView(view){
         ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,Math.PI+Math.PI*pct);
         ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
       }
-      // Radar tooltip
+      // Charts evolutivos
+      document.querySelectorAll('canvas.evo-chart').forEach(function(canvas){
+        if(canvas._chart){canvas._chart.destroy();}
+        const labels=JSON.parse(canvas.getAttribute('data-labels')||'[]');
+        const real=JSON.parse(canvas.getAttribute('data-real')||'[]');
+        const target=JSON.parse(canvas.getAttribute('data-target')||'[]');
+        canvas._chart=new Chart(canvas,{
+          type:'line',
+          data:{labels:labels,datasets:[
+            {label:'Real',data:real,borderColor:'#69231e',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#69231e',tension:0.3,spanGaps:true},
+            {label:'Target',data:target,borderColor:'#222',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:3,pointBackgroundColor:'#222',tension:0.3,spanGaps:true}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#f5f5f5'}}}}
+        });
+      });
+
       const COLS_TT={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
       const BGCOLS={g:'#e8faf4',y:'#fef3e0',r:'#fdeef0',gr:'#f5f5f5'};
       const TXTCOLS={g:'#0f6e40',y:'#8a5a00',r:'#8a1a1a',gr:'#888'};
