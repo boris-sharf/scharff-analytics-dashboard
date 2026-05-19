@@ -189,7 +189,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 .radar-legend{display:flex;flex-direction:column;gap:8px;padding-top:10px;}
 .rleg{display:flex;align-items:center;gap:7px;font-size:11px;color:#555;}
 .rleg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-.radar-tooltip{position:absolute;background:#fff;border:1px solid #e0e0e0;border-top:3px solid var(--azul);border-radius:3px;padding:10px 13px;font-size:11px;min-width:195px;max-width:230px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;}
+.radar-tooltip{position:absolute;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 3px 3px 0;padding:12px 14px;min-width:210px;max-width:250px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;}
 .rt-pilar{font-size:12px;font-weight:700;color:var(--azul);margin-bottom:8px;}
 .rt-kpi{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;color:#555;border-bottom:1px solid #f5f5f5;}
 .rt-kpi:last-of-type{border-bottom:none;}
@@ -603,22 +603,52 @@ const SC_PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
 const SC_PILARES_ICON={'Cliente Feliz':'😊','Equipo Feliz':'🙌','Valor':'💰','Salud':'🏥','Impacto':'🌱'};
 
 const SC_EMPRESAS={
-  QEMA:{label:'QEMA — Hoteles',years:{
+  QEMA:{label:'QEMA — Hoteles',locaciones:{
+    consolidado:'Consolidado',
+    arequipa:'Arequipa',
+    mancora:'Máncora',
+    lima:'Lima',
+  },years:{
     2025:{
-      Mayo:{'Rating OTAs':{t:8.5,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:62200,r:23000,p:'Valor',u:'money'},'ADR':{t:50,r:36,p:'Valor',u:'money'},'% Ocupación':{t:40,r:5,p:'Valor',u:'pct'},'GOP':{t:-7400,r:-107900,p:'Valor',u:'money'},'HC planilla':{t:40,r:33,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:72,r:168,p:'Salud',u:'pct',inv:true},'Licencias':{t:4,r:2,p:'Salud',u:'num'}},
-      Junio:{'Rating OTAs':{t:8.5,r:7.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:193700,r:127200,p:'Valor',u:'money'},'ADR':{t:42,r:33,p:'Valor',u:'money'},'% Ocupación':{t:40,r:17,p:'Valor',u:'pct'},'GOP':{t:55100,r:-17300,p:'Valor',u:'money'},'HC planilla':{t:47,r:35,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:32,r:38,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:4,p:'Salud',u:'num'}},
-      Julio:{'Rating OTAs':{t:8.5,r:8.0,p:'Cliente Feliz',u:'score'},'Satisfacción clima':{t:4.5,r:3.8,p:'Equipo Feliz',u:'score'},'Revenue':{t:309000,r:300700,p:'Valor',u:'money'},'ADR':{t:49,r:37,p:'Valor',u:'money'},'% Ocupación':{t:53,r:35,p:'Valor',u:'pct'},'GOP':{t:117300,r:79300,p:'Valor',u:'money'},'HC planilla':{t:59,r:47,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:22,r:22,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'}},
-      Agosto:{'Rating OTAs':{t:8.5,r:8.5,p:'Cliente Feliz',u:'score'},'Revenue':{t:345100,r:336600,p:'Valor',u:'money'},'ADR':{t:47,r:40,p:'Valor',u:'money'},'% Ocupación':{t:59,r:51,p:'Valor',u:'pct'},'GOP':{t:134100,r:110900,p:'Valor',u:'money'},'HC planilla':{t:63,r:58,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:20,r:21,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'}},
-      Septiembre:{'Rating OTAs':{t:8.5,r:8.3,p:'Cliente Feliz',u:'score'},'Revenue':{t:394900,r:405300,p:'Valor',u:'money'},'ADR':{t:61,r:50,p:'Valor',u:'money'},'% Ocupación':{t:59,r:60,p:'Valor',u:'pct'},'GOP':{t:155700,r:164600,p:'Valor',u:'money'},'HC planilla':{t:67,r:58,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:18,r:19,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'}},
-      Octubre:{'Rating OTAs':{t:8.5,r:8.4,p:'Cliente Feliz',u:'score'},'Rating Restaurantes':{t:4.5,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:310300,r:332600,p:'Valor',u:'money'},'ADR':{t:45,r:40,p:'Valor',u:'money'},'% Ocupación':{t:60,r:66,p:'Valor',u:'pct'},'GOP':{t:114800,r:83400,p:'Valor',u:'money'},'HC planilla':{t:65,r:63,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:22,r:27,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'}},
-      Noviembre:{'Rating OTAs':{t:8.5,r:8.3,p:'Cliente Feliz',u:'score'},'Revenue':{t:320500,r:355600,p:'Valor',u:'money'},'ADR':{t:49,r:43,p:'Valor',u:'money'},'% Ocupación':{t:61,r:63,p:'Valor',u:'pct'},'GOP':{t:120700,r:106900,p:'Valor',u:'money'},'HC planilla':{t:65,r:65,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:21,r:24,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'}},
-      Diciembre:{'Rating OTAs':{t:8.5,r:8.2,p:'Cliente Feliz',u:'score'},'Revenue':{t:414600,r:359200,p:'Valor',u:'money'},'ADR':{t:57,r:44,p:'Valor',u:'money'},'% Ocupación':{t:63,r:49,p:'Valor',u:'pct'},'GOP':{t:176400,r:96300,p:'Valor',u:'money'},'Payroll/Ingresos':{t:16,r:26,p:'Salud',u:'pct',inv:true},'Licencias':{t:6,r:5,p:'Salud',u:'num'},'Satisfacción clima':{t:4.5,r:3.9,p:'Equipo Feliz',u:'score'},'NPS colaboradores':{t:50,r:-1,p:'Equipo Feliz',u:'pct'}},
+      Mayo:{'Rating OTAs':{t:8.5,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:62200,r:23000,p:'Valor',u:'money'},'ADR':{t:50,r:36,p:'Valor',u:'money'},'% Ocupación':{t:40,r:5,p:'Valor',u:'pct'},'GOP':{t:-7400,r:-107900,p:'Valor',u:'money'},'HC planilla':{t:40,r:33,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:72,r:168,p:'Salud',u:'pct',inv:true}},
+      Junio:{'Rating OTAs':{t:8.5,r:7.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:193700,r:127200,p:'Valor',u:'money'},'ADR':{t:42,r:33,p:'Valor',u:'money'},'% Ocupación':{t:40,r:17,p:'Valor',u:'pct'},'GOP':{t:55100,r:-17300,p:'Valor',u:'money'},'HC planilla':{t:47,r:35,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:32,r:38,p:'Salud',u:'pct',inv:true}},
+      Julio:{'Rating OTAs':{t:8.5,r:8.0,p:'Cliente Feliz',u:'score'},'Satisfacción clima':{t:4.5,r:3.8,p:'Equipo Feliz',u:'score'},'Revenue':{t:309000,r:300700,p:'Valor',u:'money'},'ADR':{t:49,r:37,p:'Valor',u:'money'},'% Ocupación':{t:53,r:35,p:'Valor',u:'pct'},'GOP':{t:117300,r:79300,p:'Valor',u:'money'},'HC planilla':{t:59,r:47,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:22,r:22,p:'Salud',u:'pct',inv:true}},
+      Agosto:{'Rating OTAs':{t:8.5,r:8.5,p:'Cliente Feliz',u:'score'},'Revenue':{t:345100,r:336600,p:'Valor',u:'money'},'ADR':{t:47,r:40,p:'Valor',u:'money'},'% Ocupación':{t:59,r:51,p:'Valor',u:'pct'},'GOP':{t:134100,r:110900,p:'Valor',u:'money'},'HC planilla':{t:63,r:58,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:20,r:21,p:'Salud',u:'pct',inv:true}},
+      Septiembre:{'Rating OTAs':{t:8.5,r:8.3,p:'Cliente Feliz',u:'score'},'Revenue':{t:394900,r:405300,p:'Valor',u:'money'},'ADR':{t:61,r:50,p:'Valor',u:'money'},'% Ocupación':{t:59,r:60,p:'Valor',u:'pct'},'GOP':{t:155700,r:164600,p:'Valor',u:'money'},'HC planilla':{t:67,r:58,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:18,r:19,p:'Salud',u:'pct',inv:true}},
+      Octubre:{'Rating OTAs':{t:8.5,r:8.4,p:'Cliente Feliz',u:'score'},'Rating Restaurantes':{t:4.5,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:310300,r:332600,p:'Valor',u:'money'},'ADR':{t:45,r:40,p:'Valor',u:'money'},'% Ocupación':{t:60,r:66,p:'Valor',u:'pct'},'GOP':{t:114800,r:83400,p:'Valor',u:'money'},'HC planilla':{t:65,r:63,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:22,r:27,p:'Salud',u:'pct',inv:true}},
+      Noviembre:{'Rating OTAs':{t:8.5,r:8.3,p:'Cliente Feliz',u:'score'},'Revenue':{t:320500,r:355600,p:'Valor',u:'money'},'ADR':{t:49,r:43,p:'Valor',u:'money'},'% Ocupación':{t:61,r:63,p:'Valor',u:'pct'},'GOP':{t:120700,r:106900,p:'Valor',u:'money'},'HC planilla':{t:65,r:65,p:'Equipo Feliz',u:'num'},'Payroll/Ingresos':{t:21,r:24,p:'Salud',u:'pct',inv:true}},
+      Diciembre:{'Rating OTAs':{t:8.5,r:8.2,p:'Cliente Feliz',u:'score'},'Revenue':{t:414600,r:359200,p:'Valor',u:'money'},'ADR':{t:57,r:44,p:'Valor',u:'money'},'% Ocupación':{t:63,r:49,p:'Valor',u:'pct'},'GOP':{t:176400,r:96300,p:'Valor',u:'money'},'Payroll/Ingresos':{t:16,r:26,p:'Salud',u:'pct',inv:true},'Satisfacción clima':{t:4.5,r:3.9,p:'Equipo Feliz',u:'score'},'NPS colaboradores':{t:50,r:-1,p:'Equipo Feliz',u:'pct'}},
     },
     2026:{
       Enero:{'Rating OTAs':{t:85,r:87,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:494100,r:546300,p:'Valor',u:'money'},'ADR':{t:64,r:59,p:'Valor',u:'money'},'% Ocupación':{t:69,r:60,p:'Valor',u:'pct'},'GOP':{t:197800,r:230700,p:'Valor',u:'money'},'EBITDA':{t:93500,r:141900,p:'Valor',u:'money'},'Rev x Guest F&B':{t:20.3,r:33.3,p:'Valor',u:'score'},'Rev x Guest Exp':{t:5.7,r:2.5,p:'Valor',u:'score'},'Payroll/Ingresos':{t:19,r:17,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:16,p:'Salud',u:'num',inv:true},'% Rotación':{t:5,r:3,p:'Equipo Feliz',u:'pct',inv:true}},
       Febrero:{'Rating OTAs':{t:85,r:84,p:'Cliente Feliz',u:'pct'},'Revenue':{t:417100,r:367000,p:'Valor',u:'money'},'ADR':{t:60,r:62,p:'Valor',u:'money'},'% Ocupación':{t:69,r:50,p:'Valor',u:'pct'},'GOP':{t:149400,r:93000,p:'Valor',u:'money'},'EBITDA':{t:47300,r:4500,p:'Valor',u:'money'},'Rev x Guest F&B':{t:19.2,r:26.5,p:'Valor',u:'score'},'Rev x Guest Exp':{t:5.5,r:2.9,p:'Valor',u:'score'},'Payroll/Ingresos':{t:23,r:24,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:6,p:'Salud',u:'num',inv:true},'% Rotación':{t:5,r:4,p:'Equipo Feliz',u:'pct',inv:true}},
       Marzo:{'Rating OTAs':{t:85,r:84,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:374800,r:215900,p:'Valor',u:'money'},'ADR':{t:52,r:36,p:'Valor',u:'money'},'% Ocupación':{t:65,r:47,p:'Valor',u:'pct'},'GOP':{t:122500,r:-1400,p:'Valor',u:'money'},'EBITDA':{t:21900,r:-89800,p:'Valor',u:'money'},'Rev x Guest F&B':{t:13.2,r:16.5,p:'Valor',u:'score'},'Rev x Guest Exp':{t:4.8,r:3.2,p:'Valor',u:'score'},'Payroll/Ingresos':{t:25,r:33,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true},'% Rotación':{t:5,r:1,p:'Equipo Feliz',u:'pct',inv:true},'Satisfacción clima':{t:4.5,r:3.74,p:'Equipo Feliz',u:'score'},'NPS colaboradores':{t:50,r:8.3,p:'Equipo Feliz',u:'pct'}},
       Abril:{'Rating OTAs':{t:85,r:88,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:380400,r:325100,p:'Valor',u:'money'},'ADR':{t:49,r:51,p:'Valor',u:'money'},'% Ocupación':{t:67,r:55,p:'Valor',u:'pct'},'GOP':{t:124378,r:98118,p:'Valor',u:'money'},'EBITDA':{t:23700,r:9700,p:'Valor',u:'money'},'Rev x Guest F&B':{t:13.8,r:20.6,p:'Valor',u:'score'},'Rev x Guest Exp':{t:5.2,r:2.9,p:'Valor',u:'score'},'Payroll/Ingresos':{t:25,r:22,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true},'% Rotación':{t:5,r:0,p:'Equipo Feliz',u:'pct',inv:true}},
+    }
+  },yearsLoc:{
+    arequipa:{
+      2026:{
+        Enero:{'Rating OTAs':{t:85,r:88,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:79300,r:53200,p:'Valor',u:'money'},'ADR':{t:37,r:28,p:'Valor',u:'money'},'% Ocupación':{t:56,r:35,p:'Valor',u:'pct'},'GOP':{t:17700,r:4700,p:'Valor',u:'money'},'EBITDA':{t:-15000,r:-25700,p:'Valor',u:'money'},'Rev x Guest F&B':{t:9,r:12.2,p:'Valor',u:'score'},'Rev x Guest Exp':{t:6,r:4,p:'Valor',u:'score'},'Payroll/Ingresos':{t:29,r:35,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true}},
+        Febrero:{'Rating OTAs':{t:85,r:90,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:60500,r:37500,p:'Valor',u:'money'},'ADR':{t:34,r:32,p:'Valor',u:'money'},'% Ocupación':{t:49,r:27,p:'Valor',u:'pct'},'GOP':{t:7300,r:3900,p:'Valor',u:'money'},'EBITDA':{t:-24900,r:-26400,p:'Valor',u:'money'},'Rev x Guest F&B':{t:9,r:9.4,p:'Valor',u:'score'},'Rev x Guest Exp':{t:6,r:2.6,p:'Valor',u:'score'},'Payroll/Ingresos':{t:38,r:46,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true}},
+        Marzo:{'Rating OTAs':{t:85,r:86,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:84500,r:53500,p:'Valor',u:'money'},'ADR':{t:39,r:27,p:'Valor',u:'money'},'% Ocupación':{t:58,r:34,p:'Valor',u:'pct'},'GOP':{t:20900,r:8900,p:'Valor',u:'money'},'EBITDA':{t:-12000,r:-21400,p:'Valor',u:'money'},'Rev x Guest F&B':{t:9,r:11.8,p:'Valor',u:'score'},'Rev x Guest Exp':{t:6,r:4.6,p:'Valor',u:'score'},'Payroll/Ingresos':{t:27,r:32,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true},'Satisfacción clima':{t:4.5,r:3.58,p:'Equipo Feliz',u:'score'}},
+        Abril:{'Rating OTAs':{t:85,r:91,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.9,p:'Cliente Feliz',u:'score'},'Revenue':{t:106700,r:88400,p:'Valor',u:'money'},'ADR':{t:40,r:33,p:'Valor',u:'money'},'% Ocupación':{t:74,r:57,p:'Valor',u:'pct'},'GOP':{t:33500,r:27000,p:'Valor',u:'money'},'EBITDA':{t:-100,r:-3300,p:'Valor',u:'money'},'Rev x Guest F&B':{t:9,r:9.4,p:'Valor',u:'score'},'Rev x Guest Exp':{t:6,r:3.7,p:'Valor',u:'score'},'Payroll/Ingresos':{t:22,r:23,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      }
+    },
+    mancora:{
+      2026:{
+        Enero:{'Rating OTAs':{t:85,r:86,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:358900,r:441700,p:'Valor',u:'money'},'ADR':{t:86,r:93,p:'Valor',u:'money'},'% Ocupación':{t:78,r:78,p:'Valor',u:'pct'},'GOP':{t:158500,r:210400,p:'Valor',u:'money'},'EBITDA':{t:105700,r:170600,p:'Valor',u:'money'},'Rev x Guest F&B':{t:32,r:54.8,p:'Valor',u:'score'},'Rev x Guest Exp':{t:7,r:2.7,p:'Valor',u:'score'},'Payroll/Ingresos':{t:17,r:14,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:15,p:'Salud',u:'num',inv:true}},
+        Febrero:{'Rating OTAs':{t:85,r:82,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:302400,r:284600,p:'Valor',u:'money'},'ADR':{t:80,r:100,p:'Valor',u:'money'},'% Ocupación':{t:82,r:58,p:'Valor',u:'pct'},'GOP':{t:121400,r:73400,p:'Valor',u:'money'},'EBITDA':{t:70300,r:33800,p:'Valor',u:'money'},'Rev x Guest F&B':{t:32,r:48.8,p:'Valor',u:'score'},'Rev x Guest Exp':{t:7,r:3.3,p:'Valor',u:'score'},'Payroll/Ingresos':{t:20,r:21,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:5,p:'Salud',u:'num',inv:true}},
+        Marzo:{'Rating OTAs':{t:85,r:87,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.8,p:'Cliente Feliz',u:'score'},'Revenue':{t:231700,r:107100,p:'Valor',u:'money'},'ADR':{t:71,r:75,p:'Valor',u:'money'},'% Ocupación':{t:66,r:26,p:'Valor',u:'pct'},'GOP':{t:77900,r:-30400,p:'Valor',u:'money'},'EBITDA':{t:29000,r:-69900,p:'Valor',u:'money'},'Rev x Guest F&B':{t:32,r:45.9,p:'Valor',u:'score'},'Rev x Guest Exp':{t:7,r:4.6,p:'Valor',u:'score'},'Payroll/Ingresos':{t:26,r:41,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true},'Satisfacción clima':{t:4.5,r:3.7,p:'Equipo Feliz',u:'score'}},
+        Abril:{'Rating OTAs':{t:85,r:89,p:'Cliente Feliz',u:'pct'},'Rating Restaurantes':{t:4.7,r:4.7,p:'Cliente Feliz',u:'score'},'Revenue':{t:214100,r:184000,p:'Valor',u:'money'},'ADR':{t:74,r:89,p:'Valor',u:'money'},'% Ocupación':{t:54,r:34,p:'Valor',u:'pct'},'GOP':{t:66500,r:53700,p:'Valor',u:'money'},'EBITDA':{t:18200,r:14100,p:'Valor',u:'money'},'Rev x Guest F&B':{t:32,r:60.1,p:'Valor',u:'score'},'Rev x Guest Exp':{t:7,r:3.9,p:'Valor',u:'score'},'Payroll/Ingresos':{t:29,r:26,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:1,p:'Salud',u:'num',inv:true}},
+      }
+    },
+    lima:{
+      2026:{
+        Enero:{'Rating OTAs':{t:85,r:88,p:'Cliente Feliz',u:'pct'},'Revenue':{t:55900,r:51500,p:'Valor',u:'money'},'ADR':{t:34,r:26,p:'Valor',u:'money'},'% Ocupación':{t:72,r:76,p:'Valor',u:'pct'},'GOP':{t:21600,r:15600,p:'Valor',u:'money'},'EBITDA':{t:2800,r:-3000,p:'Valor',u:'money'},'Rev x Guest F&B':{t:4.5,r:4.2,p:'Valor',u:'score'},'Rev x Guest Exp':{t:2.5,r:1.2,p:'Valor',u:'score'},'Payroll/Ingresos':{t:19.8,r:20,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+        Febrero:{'Rating OTAs':{t:85,r:81,p:'Cliente Feliz',u:'pct'},'Revenue':{t:54200,r:45000,p:'Valor',u:'money'},'ADR':{t:35,r:32,p:'Valor',u:'money'},'% Ocupación':{t:75,r:71,p:'Valor',u:'pct'},'GOP':{t:20800,r:15600,p:'Valor',u:'money'},'EBITDA':{t:2000,r:-2900,p:'Valor',u:'money'},'Rev x Guest F&B':{t:4.5,r:1.1,p:'Valor',u:'score'},'Rev x Guest Exp':{t:2.5,r:0.8,p:'Valor',u:'score'},'Payroll/Ingresos':{t:20,r:19.99,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+        Marzo:{'Rating OTAs':{t:85,r:80,p:'Cliente Feliz',u:'pct'},'Revenue':{t:58500,r:55300,p:'Valor',u:'money'},'ADR':{t:35,r:33,p:'Valor',u:'money'},'% Ocupación':{t:72,r:78,p:'Valor',u:'pct'},'GOP':{t:23700,r:20100,p:'Valor',u:'money'},'EBITDA':{t:4900,r:1600,p:'Valor',u:'money'},'Rev x Guest F&B':{t:4.5,r:1.5,p:'Valor',u:'score'},'Rev x Guest Exp':{t:2.5,r:1.1,p:'Valor',u:'score'},'Payroll/Ingresos':{t:19,r:18.7,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true},'Satisfacción clima':{t:4.5,r:4.65,p:'Equipo Feliz',u:'score'}},
+        Abril:{'Rating OTAs':{t:85,r:85,p:'Cliente Feliz',u:'pct'},'Revenue':{t:59600,r:52800,p:'Valor',u:'money'},'ADR':{t:34,r:35,p:'Valor',u:'money'},'% Ocupación':{t:78,r:74,p:'Valor',u:'pct'},'GOP':{t:24300,r:17400,p:'Valor',u:'money'},'EBITDA':{t:5600,r:-1100,p:'Valor',u:'money'},'Rev x Guest F&B':{t:4.5,r:1.4,p:'Valor',u:'score'},'Rev x Guest Exp':{t:2.5,r:0.7,p:'Valor',u:'score'},'Payroll/Ingresos':{t:19,r:19.2,p:'Salud',u:'pct',inv:true},'Reclamos':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      }
     }
   }},
   INLOG:{label:'INLOG — Educación',years:{
@@ -655,6 +685,7 @@ const SC_EMPRESAS={
       Marzo:{  'Ingresos Netos':{t:14.2,r:13.9,p:'Valor',u:'score'},'EBITDA':{t:1.7,r:1.3,p:'Valor',u:'score'},'MB Aduanas':{t:50.3,r:59.6,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.5,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:23,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:8,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:296,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87.8,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:76.4,p:'Cliente Feliz',u:'pct'}},
     }
   }},
+  ARDE:{label:'ARDE — Retail / Suscripción',years:{
     2026:{
       Enero:{'Revenue Home':{t:12000,r:10100,p:'Valor',u:'money'},'Rev Home B2C':{t:5900,r:4100,p:'Valor',u:'money'},'Rev Home B2B':{t:6100,r:6000,p:'Valor',u:'money'},'Utilidad Bruta Home':{t:7900,r:4700,p:'Valor',u:'money'},'Churn EQA (máq)':{t:0,r:2,p:'Salud',u:'num',inv:true},'Payroll/Revenue':{t:55,r:52,p:'Salud',u:'pct',inv:true},'% Workplan':{t:100,r:79,p:'Salud',u:'pct'}},
       Febrero:{'Revenue Home':{t:21000,r:17100,p:'Valor',u:'money'},'Rev Home B2C':{t:15500,r:11500,p:'Valor',u:'money'},'Rev Home B2B':{t:5500,r:5500,p:'Valor',u:'money'},'Utilidad Bruta Home':{t:13800,r:11000,p:'Valor',u:'money'},'Churn EQA (máq)':{t:0,r:0,p:'Salud',u:'num',inv:true},'Payroll/Revenue':{t:77,r:35,p:'Salud',u:'pct',inv:true}},
@@ -662,8 +693,7 @@ const SC_EMPRESAS={
     }
   }}
 };
-
-let scEmp='QEMA',scYear=2025,scMes='all';
+let scEmp='QEMA',scYear=2025,scMes='all',scLoc='consolidado';
 
 function scCalcPct(t,r,inv){if(t===null||r===null||t===undefined||r===undefined)return null;if(inv&&r===0)return 100;if(inv&&t===0&&r>0)return 0;if(t===0)return r===0?100:null;return inv?(t/r)*100:(r/t)*100;}
 function scSemCls(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
@@ -695,10 +725,29 @@ function scFmtDelta(t,r,u,inv,emp){
   const arrow=diff>0?'↑':'↓';
   return`<span class="sc-delta ${cls}">${arrow} ${label}</span>`;
 }
-function scGetYears(){return Object.keys(SC_EMPRESAS[scEmp].years).map(Number).sort((a,b)=>a-b);}
-function scGetMeses(y){return SC_MESES_ORD.filter(m=>SC_EMPRESAS[scEmp].years[y]?.[m]);}
+function scGetYears(){
+  const emp=SC_EMPRESAS[scEmp];
+  const baseYears=Object.keys(emp.years).map(Number);
+  if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]){
+    return Object.keys(emp.yearsLoc[scLoc]).map(Number).sort((a,b)=>a-b);
+  }
+  return baseYears.sort((a,b)=>a-b);
+}
+function scGetMeses(y){
+  const emp=SC_EMPRESAS[scEmp];
+  if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]?.[y]){
+    return SC_MESES_ORD.filter(m=>emp.yearsLoc[scLoc][y]?.[m]);
+  }
+  return SC_MESES_ORD.filter(m=>emp.years[y]?.[m]);
+}
 function scGetAgg(){
-  const yData=SC_EMPRESAS[scEmp].years[scYear]||{};
+  const emp=SC_EMPRESAS[scEmp];
+  let yData;
+  if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]?.[scYear]){
+    yData=emp.yearsLoc[scLoc][scYear];
+  } else {
+    yData=emp.years[scYear]||{};
+  }
   const meses=scMes==='all'?scGetMeses(scYear):[scMes].filter(m=>yData[m]);
   const map={};
   for(const m of meses){
@@ -717,6 +766,106 @@ function scGetAgg(){
     res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR};
   }
   return res;
+}
+
+function buildRadarAlertas(aggData,empName,alertas,periodo){
+  // Reusar lógica de buildRadarSVG
+  const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
+  const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
+  function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
+  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+
+  const pilarData=PILARES.map(pilar=>{
+    if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
+    const kpis=Object.entries(aggData).filter(([,v])=>v.p===pilar);
+    const withData=kpis.filter(([,v])=>v.pct!==null);
+    const avg=withData.length>0?withData.reduce((s,[,v])=>s+v.pct,0)/withData.length:null;
+    return{pilar,pct:avg,cls:sem(avg),kpis};
+  });
+
+  window._radarTooltipData=JSON.parse(JSON.stringify(pilarData.map(d=>({
+    pilar:d.pilar,pct:d.pct,cls:d.cls,
+    kpis:d.kpis.sort((a,b)=>{
+      const pa=a[1].pct===null?-1:a[1].pct;
+      const pb=b[1].pct===null?-1:b[1].pct;
+      return pb-pa;
+    }).map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))
+  }))));
+
+  const cx=250,cy=155,R=118;
+  const n=PILARES.length;
+  const angles=PILARES.map((_,i)=>(Math.PI*2*i/n)-Math.PI/2);
+  function pt(r,a){return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+
+  let rings='',axes='',circles='',labels='',pctLabels='';
+  for(let ring=1;ring<=4;ring++){
+    const pts=angles.map(a=>pt(R*ring/4,a));
+    rings+=`<path d="M${pts.map(p=>p.join(',')).join('L')}Z" fill="none" stroke="#ebebeb" stroke-width="0.8"/>`;
+  }
+  angles.forEach(a=>{const[x,y]=pt(R,a);axes+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#ebebeb" stroke-width="0.8"/>`;});
+
+  const polyPts=pilarData.map((d,i)=>{const pct=d.pct===null?0:Math.min(100,d.pct);return pt(R*pct/100,angles[i]);});
+  const polyD='M'+polyPts.map(p=>p.join(',')).join('L')+'Z';
+
+  pilarData.forEach((d,i)=>{
+    const[vx,vy]=polyPts[i];
+    const col=COLS[d.cls];
+    circles+=`<circle cx="${vx}" cy="${vy}" r="7" fill="${col}" stroke="#fff" stroke-width="2.5" style="cursor:pointer;" data-pilar="${d.pilar}"/>`;
+    const[lx,ly]=pt(R+28,angles[i]);
+    const anchor=Math.abs(Math.cos(angles[i]))<0.1?'middle':Math.cos(angles[i])>0?'start':'end';
+    labels+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" fill="#222" font-size="12" font-weight="600" font-family="Inter,sans-serif">${d.pilar}</text>`;
+    if(d.pct!==null){
+      const[px2,py2]=pt(R*d.pct/100*0.56,angles[i]);
+      pctLabels+=`<text x="${px2}" y="${py2}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="11" font-weight="700" font-family="Inter,sans-serif">${Math.round(d.pct)}%</text>`;
+    }
+  });
+
+  // Alertas HTML
+  const alertasHtml=alertas.length>0
+    ?alertas.map(([k,v])=>{
+        const w=Math.min(100,Math.round(v.pct));
+        return`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#fdeef0;border-radius:3px;margin-bottom:6px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:#b62e2e;flex-shrink:0;margin-top:3px;"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;color:#444;font-weight:500;">${k}</span>
+              <span style="font-size:11px;font-weight:700;color:#b62e2e;white-space:nowrap;">${scFmtVal(v.lastR,v.u,empName)} / ${scFmtVal(v.lastT,v.u,empName)}</span>
+            </div>
+            <div style="height:3px;background:#f5c5c5;border-radius:2px;margin-top:5px;overflow:hidden;">
+              <div style="height:100%;width:${w}%;background:#b62e2e;border-radius:2px;"></div>
+            </div>
+            <div style="font-size:10px;color:#b62e2e;font-weight:700;margin-top:3px;">${Math.round(v.pct)}%</div>
+          </div>
+        </div>`;
+      }).join('')
+    :`<div style="font-size:12px;color:#bbb;text-align:center;padding:20px 0;">✓ Todos los KPIs en target</div>`;
+
+  return`
+    <div style="display:grid;grid-template-columns:70% 30%;gap:12px;margin-bottom:14px;align-items:stretch;">
+      <div class="radar-section">
+        <div class="radar-lbl"><span class="radar-dot"></span>Desempeño por pilar</div>
+        <div style="position:relative;display:flex;justify-content:center;">
+          <svg id="sc-radar-svg" viewBox="0 0 500 310" width="100%" height="310" style="overflow:visible;max-width:500px;">
+            ${rings}${axes}
+            <path d="${polyD}" fill="rgba(13,27,134,0.08)" stroke="#0d1b86" stroke-width="2"/>
+            ${circles}${labels}${pctLabels}
+          </svg>
+          <div class="radar-tooltip" id="sc-radar-tt"></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:12px;flex-wrap:wrap;">
+          <div class="rleg"><div class="rleg-sq" style="background:#22a869;"></div>Cumplido ≥95%</div>
+          <div class="rleg"><div class="rleg-sq" style="background:#f5a623;"></div>En riesgo 80–94%</div>
+          <div class="rleg"><div class="rleg-sq" style="background:#b62e2e;"></div>Incumplido &lt;80%</div>
+          <div class="rleg"><div class="rleg-sq" style="background:#ccc;"></div>Sin datos</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:16px 14px;border-top:3px solid #b62e2e;display:flex;flex-direction:column;">
+        <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Atención — KPIs bajo target
+        </div>
+        <div style="overflow-y:auto;flex:1;">${alertasHtml}</div>
+      </div>
+    </div>`;
 }
 
 function buildRadarSVG(aggData,empName){
@@ -788,9 +937,16 @@ function buildRadarSVG(aggData,empName){
         <div class="rleg"><div class="rleg-sq" style="background:#ccc;"></div>Sin datos</div>
       </div>
     </div>`;
+}
 
 function buildHeatmap(emp,year){
-  const yData=SC_EMPRESAS[emp]?.years[year]||{};
+  const empData=SC_EMPRESAS[emp];
+  let yData;
+  if(emp==='QEMA'&&scLoc!=='consolidado'&&empData.yearsLoc?.[scLoc]?.[year]){
+    yData=empData.yearsLoc[scLoc][year];
+  } else {
+    yData=empData?.years[year]||{};
+  }
   const meses=SC_MESES_ORD.filter(m=>yData[m]);
   if(meses.length===0)return'';
   function hmCls(p){return p===null?'hm-gr':p>=95?'hm-g':p>=80?'hm-y':'hm-r';}
@@ -831,7 +987,8 @@ function buildScorecard(){
   const meses=scGetMeses(scYear);
   const isSingle=scMes!=='all';
   const periodo=isSingle?`${scMes} ${scYear}`:(meses.length>0?`${meses[0].slice(0,3)}–${meses[meses.length-1].slice(0,3)} ${scYear}`:String(scYear));
-  setBanner(`${emp.label} — Scorecard`,periodo);
+  const locLabel=scEmp==='QEMA'&&scLoc!=='consolidado'?` — ${SC_EMPRESAS.QEMA.locaciones[scLoc]}`:'';
+  setBanner(`${emp.label}${locLabel} — Scorecard`,periodo);
 
   const agg=scGetAgg();
   const kpis=Object.values(agg).filter(v=>v.pct!==null);
@@ -856,13 +1013,17 @@ function buildScorecard(){
       <select class="sc-filter-select" id="sc-mes-sel" onchange="scSetMes(this.value)"><option value="all">Todos</option></select>
       <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
       <div class="sc-period-badge">${periodo}</div>
-    </div>`;
+    </div>
+    ${scEmp==='QEMA'?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <span class="sc-filter-label">Locación</span>
+      <div onclick="scSetLoc('consolidado')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='consolidado'?'#0d1b86':'#e0e0e0'};background:${scLoc==='consolidado'?'#0d1b86':'#fff'};color:${scLoc==='consolidado'?'#fff':'#555'};">Consolidado</div>
+      <div onclick="scSetLoc('arequipa')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='arequipa'?'#74579D':'#e0e0e0'};background:${scLoc==='arequipa'?'#74579D':'#fff'};color:${scLoc==='arequipa'?'#fff':'#555'};">Arequipa</div>
+      <div onclick="scSetLoc('mancora')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='mancora'?'#4586e4':'#e0e0e0'};background:${scLoc==='mancora'?'#4586e4':'#fff'};color:${scLoc==='mancora'?'#fff':'#555'};">Máncora</div>
+      <div onclick="scSetLoc('lima')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='lima'?'#2EC4A0':'#e0e0e0'};background:${scLoc==='lima'?'#2EC4A0':'#fff'};color:${scLoc==='lima'?'#fff':'#555'};">Lima</div>
+    </div>`:''}
+`;
 
-  html+=buildRadarSVG(agg,scEmp);
-
-  if(alertas.length>0){
-    html+=`<div class="sc-alert-box"><div class="sc-alert-title">Atención — KPIs bajo target · ${periodo}</div><div class="sc-alert-list">${alertas.map(([k,v])=>`<div class="sc-alert-item"><span class="sc-alert-dot"></span><span class="sc-alert-kpi">${k}</span><span class="sc-alert-val">${scFmtVal(v.lastR,v.u,scEmp)} vs ${scFmtVal(v.lastT,v.u,scEmp)}</span></div>`).join('')}</div></div>`;
-  }
+  html+=buildRadarAlertas(agg,scEmp,alertas,periodo);
 
   const pctCumplimiento=total>0?Math.round(verde/total*100):0;
   const gaugeCol=pctCumplimiento>=95?'#22a869':pctCumplimiento>=80?'#f5a623':'#b62e2e';
@@ -894,15 +1055,89 @@ function buildScorecard(){
     const pV=kpisP.filter(([,v])=>v.pct!==null&&v.pct>=95).length;
     const pA=kpisP.filter(([,v])=>v.pct!==null&&v.pct>=80&&v.pct<95).length;
     const pR=kpisP.filter(([,v])=>v.pct!==null&&v.pct<80).length;
-    const cells=kpisP.map(([k,v])=>{
+
+    // KPIs con gráfico evolutivo (solo QEMA)
+    const CHART_KPIS={
+      'Valor':['Revenue','ADR','% Ocupación'],
+      'Cliente Feliz':['Rating OTAs'],
+      'Salud':['Payroll/Ingresos']
+    };
+    const chartKpisForPilar=(scEmp==='QEMA'&&CHART_KPIS[pilar])||[];
+
+    // Separar KPIs en gráfico vs cards
+    const kpisGrafico=kpisP.filter(([k])=>chartKpisForPilar.includes(k));
+    const kpisCard=kpisP.filter(([k])=>!chartKpisForPilar.includes(k));
+
+    // Construir gráficos evolutivos
+    let chartsHtml='';
+    if(kpisGrafico.length>0){
+      // Obtener todos los meses del año (ignorar filtro de mes para gráfico)
+      const empData=SC_EMPRESAS[scEmp];
+      let yDataAll;
+      if(scEmp==='QEMA'&&scLoc!=='consolidado'&&empData.yearsLoc?.[scLoc]?.[scYear]){
+        yDataAll=empData.yearsLoc[scLoc][scYear];
+      } else {
+        yDataAll=empData.years[scYear]||{};
+      }
+      const mesesAll=SC_MESES_ORD.filter(m=>yDataAll[m]);
+
+      kpisGrafico.forEach(([k,v])=>{
+        const cid='evo-'+k.replace(/[^a-z0-9]/gi,'_')+'-'+scEmp+'-'+scLoc+'-'+scYear;
+        const realData=mesesAll.map(m=>yDataAll[m]?.[k]?.r??null);
+        const targetData=mesesAll.map(m=>yDataAll[m]?.[k]?.t??null);
+        const labelsStr=JSON.stringify(mesesAll.map(m=>m.slice(0,3)));
+        const realStr=JSON.stringify(realData);
+        const targetStr=JSON.stringify(targetData);
+        const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
+        chartsHtml+=`
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#888;font-weight:600;">${k}${yUnit?` (${yUnit})`:''}</span>
+              <div style="display:flex;gap:12px;">
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:18px;height:2px;background:#69231e;"></div>Real</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#666;"><div style="width:18px;border-top:2px dashed #222;"></div>Target</div>
+              </div>
+            </div>
+            <div style="position:relative;width:100%;height:130px;">
+              <canvas id="${cid}" role="img" aria-label="${k} real vs target ${scYear}"></canvas>
+            </div>
+            <script>
+            (function(){
+              const ctx=document.getElementById('${cid}');if(!ctx)return;
+              if(ctx._chart){ctx._chart.destroy();}
+              const ch=new Chart(ctx,{
+                type:'line',
+                data:{
+                  labels:${labelsStr},
+                  datasets:[
+                    {label:'Real',data:${realStr},borderColor:'#69231e',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#69231e',tension:0.3,spanGaps:true},
+                    {label:'Target',data:${targetStr},borderColor:'#222',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:3,pointBackgroundColor:'#222',tension:0.3,spanGaps:true}
+                  ]
+                },
+                options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#f5f5f5'}}}}
+              });
+              ctx._chart=ch;
+            })();
+            <\/script>
+          </div>`;
+      });
+    }
+
+    // Construir cards
+    const cells=kpisCard.map(([k,v])=>{
       const sc=scSemCls(v.pct);
       const w=v.pct===null?0:Math.min(100,Math.round(v.pct));
       const delta=isSingle?scFmtDelta(v.lastT,v.lastR,v.u,v.inv,scEmp):'';
       const trend=scFmtTrend(v.lastR,v.prevR,v.inv);
       return`<div class="sc-kcell ${sc}"><div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}</div><div class="sem ${sc}"></div></div><div class="sc-kcell-real ${sc}">${scFmtVal(v.lastR,v.u,scEmp)}${delta}${trend}</div><div class="sc-kcell-vs">Target: <b>${scFmtVal(v.lastT,v.u,scEmp)}</b></div><div class="sc-kcell-bar"><div class="sc-kcell-fill ${sc}" style="width:${w}%"></div></div>${v.inv?'<div class="sc-kcell-note">↓ Más bajo = mejor</div>':''}</div>`;
     }).join('');
+
+    const cardsSection=kpisCard.length>0?`
+      ${chartsHtml.length>0?`<div style="font-size:10px;color:#aaa;letter-spacing:.6px;text-transform:uppercase;font-weight:600;margin:8px 0 6px;">Otros KPIs de ${pilar}</div>`:''}
+      <div class="sc-kgrid">${cells}</div>`:``;
+
     const gc='sc-kgrid';
-    html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div><div class="${gc}">${cells}</div></div>`;
+    html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div>${chartsHtml}${cardsSection}</div>`;
   }
 
   html+=`
@@ -927,7 +1162,8 @@ function scBuildMesSel(){
   sel.innerHTML='<option value="all">Todos</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
   sel.value=scMes==='all'?'all':scMes;
 }
-function scSetEmp(e){scEmp=e;scMes='all';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
+function scSetEmp(e){scEmp=e;scMes='all';scLoc='consolidado';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
+function scSetLoc(l){scLoc=l;scMes='all';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
 function scSetYear(y,el){
   scYear=y;scMes='all';
   document.querySelectorAll('#sc-year-btns .sc-filter-btn').forEach(b=>b.classList.remove('active'));
@@ -1002,32 +1238,62 @@ function renderView(view){
         ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
       }
       // Radar tooltip
-      const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
-      const svg=document.getElementById('sc-radar-svg');
+      const COLS_TT={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
+      const BGCOLS={g:'#e8faf4',y:'#fef3e0',r:'#fdeef0',gr:'#f5f5f5'};
+      const TXTCOLS={g:'#0f6e40',y:'#8a5a00',r:'#8a1a1a',gr:'#888'};
+      const svgEl=document.getElementById('sc-radar-svg');
       const tt=document.getElementById('sc-radar-tt');
       const pilarData=window._radarTooltipData||[];
-      if(svg&&tt&&pilarData.length){
-        svg.querySelectorAll('circle[data-pilar]').forEach(function(c){
+      if(svgEl&&tt&&pilarData.length){
+        svgEl.querySelectorAll('circle[data-pilar]').forEach(function(c){
           c.addEventListener('mouseenter',function(e){
             const name=c.getAttribute('data-pilar');
             const d=pilarData.find(function(x){return x.pilar===name;});
             if(!d)return;
-            const col=COLS[d.cls];
-            let html='<div class="rt-pilar" style="color:'+col+'">'+d.pilar+'</div>';
+            const col=COLS_TT[d.cls];
+            const bg=BGCOLS[d.cls],tc=TXTCOLS[d.cls];
+            const avgTxt=d.pct!==null?Math.round(d.pct)+'%':'—';
+            let rows='';
             if(d.pilar==='Impacto'||d.kpis.length===0){
-              html+='<div style="font-size:11px;color:#aaa;">Sin KPIs asignados aún</div>';
+              rows='<div style="font-size:12px;color:#aaa;padding:4px 0;">Sin KPIs asignados aún</div>';
             } else {
-              d.kpis.forEach(function(k){
-                html+='<div class="rt-kpi"><div class="rt-dot" style="background:'+COLS[k.cls]+'"></div><span class="rt-name">'+k.name+'</span><span class="rt-val">'+k.real+' / '+k.target+'</span></div>';
-              });
-              if(d.pct!==null){html+='<div class="rt-foot">Promedio pilar: <b style="color:'+col+'">'+Math.round(d.pct)+'%</b></div>';}
+              rows=d.kpis.map(function(k){
+                const kcol=COLS_TT[k.cls];
+                const w=k.pct===null?0:Math.min(100,Math.round(k.pct));
+                const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';
+                return`<div style="display:flex;align-items:flex-start;gap:7px;padding:4px 0;">
+                  <div style="width:7px;height:7px;border-radius:2px;background:${kcol};flex-shrink:0;margin-top:3px;"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;gap:4px;">
+                      <span style="font-size:11px;color:#555;">${k.name}</span>
+                      <span style="font-size:11px;font-weight:700;color:${kcol};white-space:nowrap;">${pctTxt}</span>
+                    </div>
+                    <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:3px;overflow:hidden;">
+                      <div style="height:100%;width:${w}%;background:${kcol};border-radius:2px;"></div>
+                    </div>
+                  </div>
+                </div>`;
+              }).join('');
             }
-            tt.innerHTML=html;tt.style.opacity='1';
+            tt.innerHTML=`
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">
+                <div style="width:9px;height:9px;border-radius:2px;background:${col};flex-shrink:0;"></div>
+                <span style="font-size:13px;font-weight:600;color:#222;">${d.pilar}</span>
+                ${d.pct!==null?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:${bg};color:${tc};margin-left:auto;">${avgTxt}</span>`:''}
+              </div>
+              ${rows}`;
+            tt.style.opacity='1';
+            const svgRect=svgEl.getBoundingClientRect();
             const wrap=tt.parentElement.getBoundingClientRect();
-            let left=e.clientX-wrap.left+14;
-            let top=e.clientY-wrap.top-20;
-            if(left+230>wrap.width)left=e.clientX-wrap.left-230;
-            tt.style.left=left+'px';tt.style.top=top+'px';
+            const scaleX=svgRect.width/500;
+            const cx2=parseFloat(c.getAttribute('cx'))*scaleX+(svgRect.left-wrap.left);
+            const cy2=parseFloat(c.getAttribute('cy'))*scaleX+(svgRect.top-wrap.top);
+            let left=cx2+16;
+            let top=cy2-30;
+            if(left+250>wrap.width)left=cx2-260;
+            if(top<0)top=4;
+            tt.style.left=left+'px';
+            tt.style.top=top+'px';
           });
           c.addEventListener('mouseleave',function(){tt.style.opacity='0';});
         });
