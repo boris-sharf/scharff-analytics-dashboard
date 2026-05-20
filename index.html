@@ -596,7 +596,7 @@ function viewEquipo(tasks){
 }
 
 // ===================== SCORECARD =====================
-const MONEDA={QEMA:'$',INLOG:'S/',ARDE:'S/',SHARF:'S/'};
+const MONEDA={QEMA:'$',INLOG:'S/',ARDE:'S/',SHARF:'S/',INMUEBLES:'S/'};
 // REGLA KPIs: mensuales → en cada mes con dato | trimestrales → solo en mes final del trimestre (Mar, Jun, Sep, Dic)
 const SC_MESES_ORD=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SC_PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
@@ -691,9 +691,20 @@ const SC_EMPRESAS={
       Febrero:{'Revenue Home':{t:21000,r:17100,p:'Valor',u:'money'},'Rev Home B2C':{t:15500,r:11500,p:'Valor',u:'money'},'Rev Home B2B':{t:5500,r:5500,p:'Valor',u:'money'},'Utilidad Bruta Home':{t:13800,r:11000,p:'Valor',u:'money'},'Churn EQA (máq)':{t:0,r:0,p:'Salud',u:'num',inv:true},'Payroll/Revenue':{t:77,r:35,p:'Salud',u:'pct',inv:true}},
       Marzo:{'Revenue Home':{t:15000,r:7300,p:'Valor',u:'money'},'Rev Home B2C':{t:9000,r:6700,p:'Valor',u:'money'},'Rev Home B2B':{t:6000,r:600,p:'Valor',u:'money'},'Utilidad Bruta Home':{t:9900,r:4600,p:'Valor',u:'money'},'Churn EQA (máq)':{t:0,r:5,p:'Salud',u:'num',inv:true},'Payroll/Revenue':{t:120,r:71,p:'Salud',u:'pct',inv:true},'% Workplan':{t:100,r:68,p:'Salud',u:'pct'}},
     }
+  }},
+  INMUEBLES:{label:'INMUEBLES — Real Estate',years:{
+    2025:{
+      Enero:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Satisfacción inquilino':{t:80,r:80,p:'Cliente Feliz',u:'pct'},'Pago Mamina dentro fecha':{t:100,r:100,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175156,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151245,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      Febrero:{'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175260,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151560,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      Marzo:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:182233,r:182662,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:153360,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      Abril:{'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:1,p:'Salud',u:'num',inv:true}},
+    }
   }}
 };
 let scEmp='QEMA',scYear=2025,scMes='all',scLoc='consolidado';
+let scGenYear=null,scGenMes='all';
+function scSetGenYear(y){scGenYear=y;scGenMes='all';renderView('scorecard');}
+function scSetGenMes(m){scGenMes=m;renderView('scorecard');}
 
 function scCalcPct(t,r,inv){if(t===null||r===null||t===undefined||r===undefined)return null;if(inv&&r===0)return 100;if(inv&&t===0&&r>0)return 0;if(t===0)return r===0?100:null;return inv?(t/r)*100:(r/t)*100;}
 function scSemCls(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
@@ -726,6 +737,7 @@ function scFmtDelta(t,r,u,inv,emp){
   return`<span class="sc-delta ${cls}">${arrow} ${label}</span>`;
 }
 function scGetYears(){
+  if(scEmp==='GENERAL')return[];
   const emp=SC_EMPRESAS[scEmp];
   const baseYears=Object.keys(emp.years).map(Number);
   if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]){
@@ -734,6 +746,7 @@ function scGetYears(){
   return baseYears.sort((a,b)=>a-b);
 }
 function scGetMeses(y){
+  if(scEmp==='GENERAL')return[];
   const emp=SC_EMPRESAS[scEmp];
   if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]?.[y]){
     return SC_MESES_ORD.filter(m=>emp.yearsLoc[scLoc][y]?.[m]);
@@ -741,6 +754,7 @@ function scGetMeses(y){
   return SC_MESES_ORD.filter(m=>emp.years[y]?.[m]);
 }
 function scGetAgg(){
+  if(scEmp==='GENERAL')return{};
   const emp=SC_EMPRESAS[scEmp];
   let yData;
   if(scEmp==='QEMA'&&scLoc!=='consolidado'&&emp.yearsLoc?.[scLoc]?.[scYear]){
@@ -1071,7 +1085,281 @@ function buildHeatmap(emp,year){
   </div>`;
 }
 
+function buildScorecardGeneral(){
+  const EMPRESAS=['QEMA','INLOG','ARDE','SHARF','INMUEBLES'];
+  const EMP_COLORS={QEMA:'#69231e',INLOG:'#0d1b86',ARDE:'#000000',SHARF:'#ff6568',INMUEBLES:'#74579D'};
+  const EMP_LABELS={QEMA:'QEMA Hoteles',INLOG:'INLOG Educación',ARDE:'ARDE Retail',SHARF:'SHARF Logística',INMUEBLES:'INMUEBLES Real Estate'};
+
+  // Años y meses disponibles uniendo todas las empresas
+  const yearsSet=new Set();
+  EMPRESAS.forEach(emp=>Object.keys(SC_EMPRESAS[emp].years).forEach(y=>yearsSet.add(Number(y))));
+  const allYears=[...yearsSet].sort((a,b)=>a-b);
+  if(!scGenYear)scGenYear=allYears[allYears.length-1];
+
+  const mesesSet=new Set();
+  EMPRESAS.forEach(emp=>{
+    const yData=SC_EMPRESAS[emp].years[scGenYear]||{};
+    Object.keys(yData).forEach(m=>mesesSet.add(m));
+  });
+  const allMeses=SC_MESES_ORD.filter(m=>mesesSet.has(m));
+
+  // Helper para obtener agregado por empresa con filtros
+  function getEmpAgg(emp){
+    const empData=SC_EMPRESAS[emp];
+    const yData=empData.years[scGenYear]||{};
+    const meses=scGenMes==='all'?SC_MESES_ORD.filter(m=>yData[m]):[scGenMes].filter(m=>yData[m]);
+    const map={};
+    for(const m of meses){
+      for(const[k,v]of Object.entries(yData[m]||{})){
+        if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],lastT:null,lastR:null,prevR:null};
+        const p=scCalcPct(v.t,v.r,v.inv);
+        if(p!==null){if(map[k].lastR!==null)map[k].prevR=map[k].lastR;map[k].pcts.push(p);map[k].lastT=v.t;map[k].lastR=v.r;}
+        else if(v.t!==null&&v.t!==undefined)map[k].lastT=v.t;
+      }
+    }
+    const res={};
+    for(const[k,v]of Object.entries(map)){
+      const avg=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
+      res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR};
+    }
+    return{agg:res,year:scGenYear,meses,yData};
+  }
+
+  const empData=EMPRESAS.map(emp=>({emp,...getEmpAgg(emp)}));
+
+  // ── FILTROS DE PERIODO ──
+  const periodo=scGenMes==='all'?(allMeses.length>0?`${allMeses[0].slice(0,3)}–${allMeses[allMeses.length-1].slice(0,3)} ${scGenYear}`:String(scGenYear)):`${scGenMes} ${scGenYear}`;
+  setBanner('Holding La Rama — Scorecard General',periodo);
+  const filtrosHtml=`<div class="sc-filter-bar">
+    <span class="sc-filter-label">Año</span>
+    <div style="display:flex;gap:4px;">${allYears.map(y=>`<div class="sc-filter-btn${y===scGenYear?' active':''}" onclick="scSetGenYear(${y})">${y}</div>`).join('')}</div>
+    <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+    <span class="sc-filter-label">Mes</span>
+    <select class="sc-filter-select" onchange="scSetGenMes(this.value)">
+      <option value="all"${scGenMes==='all'?' selected':''}>Todos</option>
+      ${allMeses.map(m=>`<option value="${m}"${scGenMes===m?' selected':''}>${m}</option>`).join('')}
+    </select>
+    <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+    <div class="sc-period-badge">${periodo}</div>
+  </div>`;
+
+  // ── DIAMANTES ──
+  window._radarTooltipData=null;
+  const radares=empData.map(({emp,agg})=>{
+    const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
+    const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
+    function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
+    function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+    const pilarData=PILARES.map(pilar=>{
+      if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
+      const kpis=Object.entries(agg).filter(([,v])=>v.p===pilar);
+      const withData=kpis.filter(([,v])=>v.pct!==null);
+      const avg=withData.length>0?withData.reduce((s,[,v])=>s+v.pct,0)/withData.length:null;
+      return{pilar,pct:avg,cls:sem(avg),kpis};
+    });
+    const radarId='gen-radar-'+emp;
+    const ttId='gen-tt-'+emp;
+    const cx=130,cy=130,R=90;
+    const n=PILARES.length;
+    const angles=PILARES.map((_,i)=>(Math.PI*2*i/n)-Math.PI/2);
+    function pt(r,a){return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+    let rings='',axes='',circles='',labels='',pctLabels='';
+    for(let ring=1;ring<=4;ring++){
+      const pts=angles.map(a=>pt(R*ring/4,a));
+      rings+=`<path d="M${pts.map(p=>p.join(',')).join('L')}Z" fill="none" stroke="#ebebeb" stroke-width="0.8"/>`;
+    }
+    angles.forEach(a=>{const[x,y]=pt(R,a);axes+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#ebebeb" stroke-width="0.8"/>`;});
+    const polyPts=pilarData.map((d,i)=>{const pct=d.pct===null?0:Math.min(100,d.pct);return pt(R*pct/100,angles[i]);});
+    const polyD='M'+polyPts.map(p=>p.join(',')).join('L')+'Z';
+    const empCol=EMP_COLORS[emp];
+    pilarData.forEach((d,i)=>{
+      const[vx,vy]=polyPts[i];
+      const col=COLS[d.cls];
+      circles+=`<circle cx="${vx}" cy="${vy}" r="6" fill="${col}" stroke="#fff" stroke-width="2" style="cursor:pointer;" data-pilar="${d.pilar}" data-emp="${emp}"/>`;
+      const[lx,ly]=pt(R+22,angles[i]);
+      const anchor=Math.abs(Math.cos(angles[i]))<0.1?'middle':Math.cos(angles[i])>0?'start':'end';
+      labels+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" fill="#222" font-size="10" font-weight="600" font-family="Inter,sans-serif">${d.pilar}</text>`;
+      if(d.pct!==null){
+        const[px2,py2]=pt(R*d.pct/100*0.56,angles[i]);
+        pctLabels+=`<text x="${px2}" y="${py2}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="9" font-weight="700" font-family="Inter,sans-serif">${Math.round(d.pct)}%</text>`;
+      }
+    });
+    const ttData=JSON.stringify(pilarData.map(d=>({pilar:d.pilar,pct:d.pct,cls:d.cls,kpis:d.kpis.map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))})));
+    return`<div style="background:#fff;border-radius:3px;padding:14px;border-top:3px solid ${empCol};">
+      <div style="font-size:11px;font-weight:700;color:${empCol};margin-bottom:10px;">${EMP_LABELS[emp]}</div>
+      <div style="position:relative;display:flex;justify-content:center;">
+        <svg id="${radarId}" viewBox="0 0 260 260" width="100%" height="200" style="overflow:visible;">
+          ${rings}${axes}
+          <path d="${polyD}" fill="${empCol}22" stroke="${empCol}" stroke-width="1.8"/>
+          ${circles}${labels}${pctLabels}
+        </svg>
+        <div id="${ttId}" class="radar-tooltip" style="min-width:180px;"></div>
+      </div>
+      <script>window['_genTT_${emp}']=JSON.parse('${ttData.replace(/'/g,"\\'")}');<\/script>
+    </div>`;
+  }).join('');
+
+  // ── RESUMEN CONSOLIDADO ──
+  let totalAll=0,verdeAll=0,amarilloAll=0,rojoAll=0;
+  empData.forEach(({agg})=>{
+    const kpis=Object.values(agg).filter(v=>v.pct!==null);
+    totalAll+=kpis.length;
+    verdeAll+=kpis.filter(v=>v.pct>=95).length;
+    amarilloAll+=kpis.filter(v=>v.pct>=80&&v.pct<95).length;
+    rojoAll+=kpis.filter(v=>v.pct<80).length;
+  });
+  const pctAll=totalAll>0?Math.round(verdeAll/totalAll*100):0;
+  const gaugeColAll=pctAll>=95?'#22a869':pctAll>=80?'#f5a623':'#b62e2e';
+
+  // ── TABLA COMPARATIVA ──
+  const tablaRows=empData.map(({emp,agg})=>{
+    const kpis=Object.values(agg).filter(v=>v.pct!==null);
+    const t=kpis.length;
+    const g=kpis.filter(v=>v.pct>=95).length;
+    const y=kpis.filter(v=>v.pct>=80&&v.pct<95).length;
+    const r=kpis.filter(v=>v.pct<80).length;
+    const avg=t>0?Math.round(kpis.reduce((s,v)=>s+v.pct,0)/t):0;
+    const cls=avg>=95?'g':avg>=80?'y':'r';
+    const semCol=cls==='g'?'#22a869':cls==='y'?'#f5a623':'#b62e2e';
+    return`<tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;font-weight:700;color:${EMP_COLORS[emp]};">${EMP_LABELS[emp]}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="display:inline-block;padding:3px 9px;border-radius:3px;font-size:13px;font-weight:700;background:${semCol}22;color:${semCol};">${avg}%</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#444;">${t}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="color:#22a869;font-weight:700;">${g}</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="color:#c07800;font-weight:700;">${y}</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="color:#b62e2e;font-weight:700;">${r}</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;"><div style="display:inline-block;width:100px;height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;vertical-align:middle;"><div style="height:100%;width:${Math.min(100,avg)}%;background:${semCol};"></div></div></td>
+    </tr>`;
+  }).join('');
+  const tablaHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;">
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Comparativa de empresas · ${periodo}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="text-align:center;color:#888;font-size:10px;letter-spacing:.5px;text-transform:uppercase;">
+        <th style="text-align:left;padding:8px 12px;font-weight:600;">Empresa</th>
+        <th style="padding:8px 12px;font-weight:600;">Cumplimiento</th>
+        <th style="padding:8px 12px;font-weight:600;">Total KPIs</th>
+        <th style="padding:8px 12px;font-weight:600;color:#22a869;">≥95%</th>
+        <th style="padding:8px 12px;font-weight:600;color:#c07800;">80–94%</th>
+        <th style="padding:8px 12px;font-weight:600;color:#b62e2e;">&lt;80%</th>
+        <th style="padding:8px 12px;font-weight:600;">Avance</th>
+      </tr></thead>
+      <tbody>${tablaRows}</tbody>
+    </table>
+  </div>`;
+
+  // ── TOP 5 KPIs CRÍTICOS DEL HOLDING ──
+  const allCriticos=[];
+  empData.forEach(({emp,agg})=>{
+    Object.entries(agg).forEach(([k,v])=>{
+      if(v.pct!==null&&v.pct<80){
+        allCriticos.push({emp,k,...v});
+      }
+    });
+  });
+  allCriticos.sort((a,b)=>a.pct-b.pct);
+  const top5=allCriticos.slice(0,5);
+  const top5Html=top5.length>0?`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #b62e2e;">
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Top 5 KPIs críticos del holding</div>
+    ${top5.map(item=>{
+      const w=Math.min(100,Math.round(item.pct));
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;">
+        <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${EMP_COLORS[item.emp]}22;color:${EMP_COLORS[item.emp]};font-weight:700;flex-shrink:0;min-width:60px;text-align:center;">${item.emp}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:3px;">
+            <span style="font-size:12px;color:#333;font-weight:500;">${item.k}</span>
+            <span style="font-size:12px;font-weight:700;color:#b62e2e;white-space:nowrap;">${Math.round(item.pct)}%</span>
+          </div>
+          <div style="height:5px;background:#f5c5c5;border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${w}%;background:#b62e2e;border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`:`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #22a869;">
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Top 5 KPIs críticos del holding</div>
+    <div style="font-size:13px;color:#22a869;font-weight:600;text-align:center;padding:10px 0;">✓ Sin KPIs incumplidos en el holding</div>
+  </div>`;
+
+  // ── HEATMAP CONSOLIDADO (filas = empresas, cols = meses) ──
+  function hmCls(p){return p===null?'hm-gr':p>=95?'hm-g':p>=80?'hm-y':'hm-r';}
+  function hmTxt(p){return p===null?'—':Math.round(p)+'%';}
+  const heatmapRows=EMPRESAS.map(emp=>{
+    const yData=SC_EMPRESAS[emp].years[scGenYear]||{};
+    const cells=allMeses.map(m=>{
+      const mesData=yData[m];
+      if(!mesData)return`<td><span class="hm-cell hm-gr">—</span></td>`;
+      const allP=Object.values(mesData).map(v=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
+      const avg=allP.length>0?allP.reduce((a,b)=>a+b,0)/allP.length:null;
+      return`<td><span class="hm-cell ${hmCls(avg)}">${hmTxt(avg)}</span></td>`;
+    }).join('');
+    return`<tr><td class="pilar-name" style="color:${EMP_COLORS[emp]};font-weight:700;">${emp}</td>${cells}</tr>`;
+  }).join('');
+  const heatmapHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;">
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear}</div>
+    <table class="heatmap-table">
+      <thead><tr><th class="pilar-col">Empresa</th>${allMeses.map(m=>`<th>${m.slice(0,3)}</th>`).join('')}</tr></thead>
+      <tbody>${heatmapRows}</tbody>
+    </table>
+    <div class="heatmap-legend">
+      <div class="hm-leg"><div class="hm-leg-sq hm-g"></div>Cumplido ≥95%</div>
+      <div class="hm-leg"><div class="hm-leg-sq hm-y"></div>En riesgo 80–94%</div>
+      <div class="hm-leg"><div class="hm-leg-sq hm-r"></div>Incumplido &lt;80%</div>
+      <div class="hm-leg"><div class="hm-leg-sq hm-gr"></div>Sin datos</div>
+    </div>
+  </div>`;
+
+  return`
+    ${filtrosHtml}
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;">${radares}</div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:12px;align-items:stretch;">
+      <div class="sc-summary" style="margin-bottom:0;">
+        <div class="sc-scard dark"><div class="sc-scard-lbl">KPIs totales</div><div class="sc-scard-val dark">${totalAll}</div><div class="sc-scard-desc">todas las empresas</div></div>
+        <div class="sc-scard green"><div class="sc-scard-lbl">Cumplidos ≥95%</div><div class="sc-scard-val green">${verdeAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(verdeAll/totalAll*100):0}% del total</div></div>
+        <div class="sc-scard yellow"><div class="sc-scard-lbl">En riesgo 80–94%</div><div class="sc-scard-val yellow">${amarilloAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(amarilloAll/totalAll*100):0}% del total</div></div>
+        <div class="sc-scard red"><div class="sc-scard-lbl">Incumplidos &lt;80%</div><div class="sc-scard-val red">${rojoAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(rojoAll/totalAll*100):0}% del total</div></div>
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:160px;border-top:3px solid ${gaugeColAll};">
+        <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Cumplimiento</div>
+        <canvas id="sc-gauge" width="130" height="80"></canvas>
+        <div style="font-size:28px;font-weight:700;color:${gaugeColAll};margin-top:4px;">${pctAll}%</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px;">del holding</div>
+      </div>
+    </div>
+
+    ${tablaHtml}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      ${top5Html}
+      <div class="conclusiones-box" style="margin:0;border-radius:3px;">
+        <div class="conclusiones-header">
+          <div class="conclusiones-title">✦ Análisis automático <span class="ai-badge">Claude AI</span></div>
+          <button class="conclusiones-btn" id="btn-conclusiones" onclick="generarConclusionesGeneral()">↻ Generar</button>
+        </div>
+        <div id="conclusiones-output"><div style="font-size:12px;color:#bbb;font-style:italic;">Genera un análisis consolidado del holding.</div></div>
+      </div>
+    </div>
+
+    ${heatmapHtml}`;
+}
+
 function buildScorecard(){
+  // Routing especial para vista GENERAL (debe ir antes de leer SC_EMPRESAS[scEmp])
+  if(scEmp==='GENERAL'){
+    setBanner('Holding La Rama — Scorecard General','Todas las empresas');
+    const subnav=`
+      <div class="sc-sub-nav">
+        <div class="sc-sub-pill active" onclick="scSetEmp('GENERAL')">★ General</div>
+        <div class="sc-sub-pill" onclick="scSetEmp('QEMA')">QEMA</div>
+        <div class="sc-sub-pill" onclick="scSetEmp('INLOG')">INLOG</div>
+        <div class="sc-sub-pill" onclick="scSetEmp('ARDE')">ARDE</div>
+        <div class="sc-sub-pill" onclick="scSetEmp('SHARF')">SHARF</div>
+        <div class="sc-sub-pill" onclick="scSetEmp('INMUEBLES')">INMUEBLES</div>
+      </div>`;
+    return subnav+buildScorecardGeneral();
+  }
+
   const emp=SC_EMPRESAS[scEmp];
   const meses=scGetMeses(scYear);
   const isSingle=scMes!=='all';
@@ -1089,11 +1377,15 @@ function buildScorecard(){
 
   let html=`
     <div class="sc-sub-nav">
+      <div class="sc-sub-pill${scEmp==='GENERAL'?' active':''}" onclick="scSetEmp('GENERAL')">★ General</div>
       <div class="sc-sub-pill${scEmp==='QEMA'?' active':''}" onclick="scSetEmp('QEMA')">QEMA</div>
       <div class="sc-sub-pill${scEmp==='INLOG'?' active':''}" onclick="scSetEmp('INLOG')">INLOG</div>
       <div class="sc-sub-pill${scEmp==='ARDE'?' active':''}" onclick="scSetEmp('ARDE')">ARDE</div>
       <div class="sc-sub-pill${scEmp==='SHARF'?' active':''}" onclick="scSetEmp('SHARF')">SHARF</div>
-    </div>
+      <div class="sc-sub-pill${scEmp==='INMUEBLES'?' active':''}" onclick="scSetEmp('INMUEBLES')">INMUEBLES</div>
+    </div>`;
+
+  html+=`
     <div class="sc-filter-bar">
       <span class="sc-filter-label">Año</span>
       <div style="display:flex;gap:4px;" id="sc-year-btns"></div>
@@ -1188,7 +1480,7 @@ function buildScorecard(){
         const realStr=JSON.stringify(realData);
         const targetStr=JSON.stringify(targetData);
         const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
-        const lineColor=scEmp==='QEMA'?'#69231e':scEmp==='INLOG'?'#0d1b86':scEmp==='ARDE'?'#000000':'#ff6568';
+        const lineColor=scEmp==='QEMA'?'#69231e':scEmp==='INLOG'?'#0d1b86':scEmp==='ARDE'?'#000000':scEmp==='SHARF'?'#ff6568':'#74579D';
         const cardHtml=`<div class="sc-kcell ${sc}" style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">
           <div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}</div><div class="sem ${sc}"></div></div>
           <div class="sc-kcell-real ${sc}">${scFmtVal(v.lastR,v.u,scEmp)}${delta}${trend}</div>
@@ -1241,6 +1533,37 @@ function scSetYear(y,el){
   scBuildMesSel();renderView('scorecard');
 }
 function scSetMes(v){scMes=v;renderView('scorecard');}
+
+async function generarConclusionesGeneral(){
+  const btn=document.getElementById('btn-conclusiones');
+  const out=document.getElementById('conclusiones-output');
+  if(!btn||!out)return;
+  btn.disabled=true;btn.textContent='Analizando...';
+  out.innerHTML=`<div class="conclusiones-loading"><div class="loading-dots"><span></span><span></span><span></span></div> Claude está analizando el holding...</div>`;
+  const EMPRESAS=['QEMA','INLOG','ARDE','SHARF'];
+  const lineas=EMPRESAS.map(emp=>{
+    const empData=SC_EMPRESAS[emp];
+    const ys=Object.keys(empData.years).map(Number).sort((a,b)=>b-a);
+    const year=ys[0];
+    const yData=empData.years[year]||{};
+    const meses=SC_MESES_ORD.filter(m=>yData[m]);
+    const map={};
+    for(const m of meses){for(const[k,v]of Object.entries(yData[m]||{})){if(!map[k])map[k]={pcts:[],lastT:null,lastR:null,u:v.u,inv:v.inv};const p=scCalcPct(v.t,v.r,v.inv);if(p!==null){map[k].pcts.push(p);map[k].lastT=v.t;map[k].lastR=v.r;}}}
+    const kpis=Object.entries(map).filter(([,v])=>v.pcts.length>0).map(([k,v])=>{const avg=v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length;const estado=avg>=95?'CUMPLIDO':avg>=80?'EN RIESGO':'INCUMPLIDO';return`  - ${k}: ${Math.round(avg)}% — ${estado}`;}).join('\n');
+    return`${emp}:\n${kpis}`;
+  }).join('\n\n');
+  const prompt=`Eres analista del Holding La Rama. Analiza el desempeño consolidado de las 4 empresas del holding y genera un análisis ejecutivo en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- 3 párrafos: (1) visión general del holding, (2) empresas y KPIs más críticos con cifras, (3) fortalezas destacadas y recomendación prioritaria.\n- Lenguaje directo y ejecutivo. Sin bullet points ni encabezados.\n- Máximo 200 palabras.`;
+  try{
+    const res=await fetch('https://admin-inlog.app.n8n.cloud/webhook/claude-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'No se pudo generar el análisis.';
+    const paragraphs=text.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('');
+    out.innerHTML=`<div class="conclusiones-content">${paragraphs}</div>`;
+  }catch(e){
+    out.innerHTML=`<div style="font-size:13px;color:#b62e2e;">Error al conectar con la API.</div>`;
+  }
+  btn.disabled=false;btn.textContent='↻ Generar';
+}
 
 async function generarConclusiones(){
   const btn=document.getElementById('btn-conclusiones');
@@ -1384,6 +1707,41 @@ function renderView(view){
           c.addEventListener('mouseleave',function(){tt.style.opacity='0';});
         });
       }
+
+      // Hover radares vista General
+      ['QEMA','INLOG','ARDE','SHARF','INMUEBLES'].forEach(function(emp){
+        const svgEl2=document.getElementById('gen-radar-'+emp);
+        const tt2=document.getElementById('gen-tt-'+emp);
+        const pilarData2=window['_genTT_'+emp]||[];
+        const COLS2={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
+        const BGCOLS2={g:'#e8faf4',y:'#fef3e0',r:'#fdeef0',gr:'#f5f5f5'};
+        const TXTCOLS2={g:'#0f6e40',y:'#8a5a00',r:'#8a1a1a',gr:'#888'};
+        if(!svgEl2||!tt2||!pilarData2.length)return;
+        svgEl2.querySelectorAll('circle[data-pilar]').forEach(function(c){
+          c.addEventListener('mouseenter',function(e){
+            const name=c.getAttribute('data-pilar');
+            const d=pilarData2.find(function(x){return x.pilar===name;});
+            if(!d)return;
+            const col=COLS2[d.cls];
+            const bg=BGCOLS2[d.cls],tc=TXTCOLS2[d.cls];
+            let rows='';
+            if(d.pilar==='Impacto'||d.kpis.length===0){rows='<div style="font-size:11px;color:#aaa;padding:4px 0;">Sin KPIs asignados</div>';}
+            else{rows=d.kpis.map(function(k){const kcol=COLS2[k.cls];const w=k.pct===null?0:Math.min(100,Math.round(k.pct));const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';return`<div style="display:flex;align-items:flex-start;gap:6px;padding:3px 0;"><div style="width:6px;height:6px;border-radius:2px;background:${kcol};flex-shrink:0;margin-top:3px;"></div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:4px;"><span style="font-size:11px;color:#555;">${k.name}</span><span style="font-size:11px;font-weight:700;color:${kcol};">${pctTxt}</span></div><div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:${kcol};border-radius:2px;"></div></div></div></div>`;}).join('');}
+            tt2.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;"><div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div><span style="font-size:12px;font-weight:600;color:#222;">${d.pilar}</span>${d.pct!==null?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:${bg};color:${tc};margin-left:auto;">${Math.round(d.pct)}%</span>`:''}</div>${rows}`;
+            tt2.style.opacity='1';
+            const svgRect2=svgEl2.getBoundingClientRect();
+            const wrap2=tt2.parentElement.getBoundingClientRect();
+            const scaleX2=svgRect2.width/260;
+            const cx3=parseFloat(c.getAttribute('cx'))*scaleX2+(svgRect2.left-wrap2.left);
+            const cy3=parseFloat(c.getAttribute('cy'))*scaleX2+(svgRect2.top-wrap2.top);
+            let left2=cx3+14;let top2=cy3-25;
+            if(left2+200>wrap2.width)left2=cx3-210;if(top2<0)top2=4;
+            tt2.style.left=left2+'px';tt2.style.top=top2+'px';
+          });
+          c.addEventListener('mouseleave',function(){tt2.style.opacity='0';});
+        });
+      });
+
     },20);
     return;
   }
