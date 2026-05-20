@@ -1164,12 +1164,12 @@ function buildScorecard(){
     const pR=kpisP.filter(([,v])=>v.pct!==null&&v.pct<80).length;
 
     // KPIs con gráfico evolutivo (solo QEMA)
-    // Para QEMA: cada KPI = gráfico 75% + card 25%
+    // Todas las empresas: cada KPI = gráfico 75% + card 25%
     let pillarContent='';
-    if(scEmp==='QEMA'){
+    {
       const empData=SC_EMPRESAS[scEmp];
       let yDataAll;
-      if(scLoc!=='consolidado'&&empData.yearsLoc?.[scLoc]?.[scYear]){
+      if(scEmp==='QEMA'&&scLoc!=='consolidado'&&empData.yearsLoc?.[scLoc]?.[scYear]){
         yDataAll=empData.yearsLoc[scLoc][scYear];
       } else {
         yDataAll=empData.years[scYear]||{};
@@ -1188,6 +1188,7 @@ function buildScorecard(){
         const realStr=JSON.stringify(realData);
         const targetStr=JSON.stringify(targetData);
         const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
+        const lineColor=scEmp==='QEMA'?'#69231e':scEmp==='INLOG'?'#0d1b86':scEmp==='ARDE'?'#000000':'#ff6568';
         const cardHtml=`<div class="sc-kcell ${sc}" style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">
           <div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}</div><div class="sem ${sc}"></div></div>
           <div class="sc-kcell-real ${sc}">${scFmtVal(v.lastR,v.u,scEmp)}${delta}${trend}</div>
@@ -1200,29 +1201,19 @@ function buildScorecard(){
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
             <span style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#888;font-weight:600;">${k}${yUnit?` (${yUnit})`:''}</span>
             <div style="display:flex;gap:10px;">
-              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#666;"><div style="width:14px;height:2px;background:#69231e;border-radius:1px;"></div>Real</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#666;"><div style="width:14px;height:2px;background:${lineColor};border-radius:1px;"></div>Real</div>
               <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#666;"><div style="width:14px;border-top:2px dashed #222;"></div>Target</div>
             </div>
           </div>
           <div style="position:relative;width:100%;height:100px;">
             <canvas id="${cid}" class="evo-chart" role="img" aria-label="${k} ${scYear}"
-              data-labels='${labelsStr}' data-real='${realStr}' data-target='${targetStr}'></canvas>
+              data-labels='${labelsStr}' data-real='${realStr}' data-target='${targetStr}' data-color='${lineColor}'></canvas>
           </div>
         </div>`:`<div style="flex:0 0 75%;background:#fff;border-radius:4px;padding:10px 12px;display:flex;align-items:center;justify-content:center;"><span style="font-size:12px;color:#bbb;">Sin datos históricos</span></div>`;
         return`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:stretch;">${chartHtml}<div style="flex:1;min-width:0;">${cardHtml}</div></div>`;
       }).join('');
 
       pillarContent=kpiRows;
-    } else {
-      // Otras empresas: solo cards
-      const cells=kpisP.map(([k,v])=>{
-        const sc=scSemCls(v.pct);
-        const w=v.pct===null?0:Math.min(100,Math.round(v.pct));
-        const delta=isSingle?scFmtDelta(v.lastT,v.lastR,v.u,v.inv,scEmp):'';
-        const trend=scFmtTrend(v.lastR,v.prevR,v.inv);
-        return`<div class="sc-kcell ${sc}"><div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}</div><div class="sem ${sc}"></div></div><div class="sc-kcell-real ${sc}">${scFmtVal(v.lastR,v.u,scEmp)}${delta}${trend}</div><div class="sc-kcell-vs">Target: <b>${scFmtVal(v.lastT,v.u,scEmp)}</b></div><div class="sc-kcell-bar"><div class="sc-kcell-fill ${sc}" style="width:${w}%"></div></div>${v.inv?'<div class="sc-kcell-note">↓ Más bajo = mejor</div>':''}</div>`;
-      }).join('');
-      pillarContent=`<div class="sc-kgrid">${cells}</div>`;
     }
 
     html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div>${pillarContent}</div>`;
@@ -1322,10 +1313,11 @@ function renderView(view){
         const labels=JSON.parse(canvas.getAttribute('data-labels')||'[]');
         const real=JSON.parse(canvas.getAttribute('data-real')||'[]');
         const target=JSON.parse(canvas.getAttribute('data-target')||'[]');
+        const lineColor=canvas.getAttribute('data-color')||'#0d1b86';
         canvas._chart=new Chart(canvas,{
           type:'line',
           data:{labels:labels,datasets:[
-            {label:'Real',data:real,borderColor:'#69231e',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#69231e',tension:0.3,spanGaps:true},
+            {label:'Real',data:real,borderColor:lineColor,backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:lineColor,tension:0.3,spanGaps:true},
             {label:'Target',data:target,borderColor:'#222',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,4],pointRadius:3,pointBackgroundColor:'#222',tension:0.3,spanGaps:true}
           ]},
           options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#f5f5f5'}}}}
