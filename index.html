@@ -319,13 +319,11 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
     </div>
   </div>
   <div class="nav">
-    <div class="nav-pill active" onclick="switchView('general',this)">General</div>
-    <div class="nav-pill" onclick="switchView('qema',this)">QEMA</div>
-    <div class="nav-pill" onclick="switchView('inlog',this)">INLOG</div>
-    <div class="nav-pill" onclick="switchView('arde',this)">ARDE</div>
+    <div class="nav-pill" onclick="switchView('recurrentes',this)">Recurrentes</div>
+    <div class="nav-pill" onclick="switchView('especificos',this)">Específicos</div>
+    <div class="nav-pill" onclick="switchView('links',this)">🔗 Links</div>
     <div class="nav-pill" onclick="switchView('calendario',this)">Calendario</div>
-    <div class="nav-pill" onclick="switchView('equipo',this)">Equipo</div>
-    <div class="nav-pill kpi-pill" onclick="switchView('scorecard',this)">★ KPIs Scorecard</div>
+    <div class="nav-pill kpi-pill active" onclick="switchView('scorecard',this)">★ KPIs Scorecard</div>
   </div>
   <div class="banner">
     <div>
@@ -341,7 +339,9 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 const PRESET_DB='61389aef59004c0d8ae6285e6c1d7db4';
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let TOKEN='',DB_ID=PRESET_DB,TASKS=[],activeCharts=[];
-let calY,calM,currentView='general';
+const RECURRENTES = [{"tarea": "Podio de Brújula", "asignado": "Boris Chavez", "deadline": "2026-06-19", "empresa": "QEMA", "estado": "✅ Entregado", "fechaReal": "2026-05-08", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Cierre WPs ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-07", "empresa": "ARDE", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Integraciones Marketing", "asignado": "Boris Chavez", "deadline": "2026-05-08", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-08", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Encuestas", "asignado": "Boris Chavez", "deadline": "2026-05-14", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-14", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Reporte Guest Revu", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-20", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Reporte Linkedin ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-28", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Boletín mensual ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-01", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Brújula qema", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "qema en Punto", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Premiación fuegos del trimestre", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Celebración día del padre", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integracion Máncora", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integración Lima", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integración Arequipa", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Encuesta clima laboral Q2", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Reporte clima laboral Q2", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-20", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Inicio evaluación de desempeño Q3", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-01", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Evaluación desempeño Q3 lista", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-26", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Aniversario qema ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Acta directorio", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-29", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta brújula", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-19", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Directorio qema", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-26", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "On track Inlog", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-29", "empresa": "INLOG", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Comite cultura", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Café sin guion Inlog", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-12", "empresa": "INLOG", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Directorio qema", "asignado": "", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Acta directorio", "asignado": "", "deadline": "2026-06-19", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "Brujula qema", "asignado": "", "deadline": "2026-06-12", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Acta brujula qema", "asignado": "", "deadline": "2026-06-16", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "P&L Inversiones Fuego", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "ARDE", "estado": "🔄 En progreso", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-15", "empresa": "INLOG", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L Sharf", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "SHARF", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L Qema", "asignado": "Boris Chavez", "deadline": "2026-05-15", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Directorio Sharf", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Mandar Factura Calle B (SGS)", "asignado": "ANDREA CALDAS", "deadline": "2026-05-07", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de alquiler Calle B (SGS)", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de préstamos banco Calle B", "asignado": "ANDREA CALDAS", "deadline": "2026-05-28", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-28", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Mandar Factura Cedros (SLI)", "asignado": "ANDREA CALDAS", "deadline": "2026-05-07", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de alquiler Cedros (SLI)", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de préstamos banco Cedros", "asignado": "ANDREA CALDAS", "deadline": "2026-05-28", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-28", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - NMN", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Franquicias", "asignado": "ANDREA CALDAS", "deadline": "2026-05-04", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-04", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Vertical", "asignado": "ANDREA CALDAS", "deadline": "2026-05-24", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-24", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - UIB", "asignado": "ANDREA CALDAS", "deadline": "2026-05-13", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-13", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Ref Master", "asignado": "ANDREA CALDAS", "deadline": "2026-05-12", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-12", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Factura a  LA RAMA a SLI", "asignado": "ANDREA CALDAS", "deadline": "2026-05-14", "empresa": "LA RAMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-14", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Pago a La Mamina", "asignado": "ANDREA CALDAS", "deadline": "2026-05-05", "empresa": "LA RAMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-05", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Power BI Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-26", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-26", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "Proyección Lucro Cesante Mancora", "asignado": "Boris Chavez", "deadline": "2026-05-29", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-29", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Salud"}, {"tarea": "Encuestas Módulo 1 Pregrado", "asignado": "Boris Chavez", "deadline": "2026-05-29", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-29", "frecuencia": "Trimestral", "esRecurrente": "No", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Bowling Chart Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-26", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-26", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Salud"}, {"tarea": "Acta Directorio ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-06-01", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Acta Directorio Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-06-01", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Feedback Brújula QEMA", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Cierre WPs ARDE - Nuevo Q", "asignado": "Boris Chavez", "deadline": "2026-06-26", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-06-30", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": "Salud"}, {"tarea": "Comisiones ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Reporte Auditoría IA Pregrado", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Reporte Auditoría IA EC", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral Staff", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral Docente", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral ARDE", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta Cómo Vamos ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta Cómo Vamos INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Podio Cómo Vamos INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Cierre WPs ARDE - Actual Q", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-07-06", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Reporte ADR/Revenue/Ocupacion x Tarifa/Habitacion", "asignado": "Boris Chavez", "deadline": "2026-05-11", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-11", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}];
+const ESPECIFICOS = [{"tarea": "Realizar el ejercicio de agentización (plantilla Claude enviado en el correo anterior) para todas las posiciones de Arde ", "responsable": "Alejandro", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-15", "empresa": "ARDE", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Incluir proveedores tercerizados (revenue management, agencias de pauta y contenido) en el ejercicio de agentización", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Prescindir de terceros de marketing e internalizar con IA — coordinar con Alejandro y Gabriela una reu", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Implementar HubSpot para el equipo comercial", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Agentizar roles 100% automatizables en el resultado del ejercicio ", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-08-11", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Presentar plan detallado de la implementación de agentización (áreas, posiciones, timing, cronograma) ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Sincerar guías de puesto (funciones reales vs. documentadas) antes de subir info al ejercicio", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Mapeo de la Segunda Ola: Comercial Sharf, FedEx y áreas administrativas complementarias ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Presentar plan detallado de la Primera Ola (áreas, posiciones, timing, cronorama) ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Ejecutar la Primera Ola de agentización ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-08-11", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}];
+let calY,calM,currentView='scorecard';
 const today=new Date();today.setHours(0,0,0,0);
 calY=today.getFullYear();calM=today.getMonth();
 document.getElementById('topbar-date').textContent=`${today.getDate()} ${MONTHS[today.getMonth()]} ${today.getFullYear()}`;
@@ -522,19 +522,539 @@ function viewEmpresa(emp,tasks){
     </div>`;
 }
 
+// ─────────────── LINKS ÚTILES ───────────────
+const LINKS_DATA={
+  'HOLDING':{
+    color:'#4586e4',
+    label:'Holding La Rama',
+    icon:'🏢',
+    links:[
+      {name:'Control de Gestión — La Rama Holding',url:'https://www.notion.so/Control-de-Gesti-n-La-Rama-Holding-3584c70df57981ad8d1ec24c28e4128e?source=copy_link',type:'Notion'}
+    ]
+  },
+  'QEMA':{
+    color:'#69231e',
+    label:'QEMA Hoteles',
+    icon:'🏨',
+    links:[
+      {name:'Dashboard PowerBI — QEMA #1',url:'https://app.powerbi.com/view?r=eyJrIjoiODM2MzQ0ZTctNDRjZi00M2FmLWFlNGQtMjliYjA5MzYyMDcxIiwidCI6ImQzYWNmZjEwLTU1MzEtNDY1Yy1iM2ZkLTkxODZmMmZhYjVjZiIsImMiOjR9',type:'PowerBI'},
+      {name:'Dashboard PowerBI — QEMA #2',url:'https://app.powerbi.com/view?r=eyJrIjoiYWFmYzk2YWYtNmFlNy00OWQzLThjNDMtNDU1OGMxNWU5OWI0IiwidCI6ImQzYWNmZjEwLTU1MzEtNDY1Yy1iM2ZkLTkxODZmMmZhYjVjZiIsImMiOjR9',type:'PowerBI'}
+    ]
+  },
+  'INLOG':{
+    color:'#0d1b86',
+    label:'INLOG Educación',
+    icon:'🎓',
+    links:[]
+  },
+  'ARDE':{
+    color:'#000000',
+    label:'ARDE Retail',
+    icon:'🛒',
+    links:[]
+  },
+  'SHARF':{
+    color:'#ff6568',
+    label:'SHARF Logística',
+    icon:'📦',
+    links:[]
+  },
+  'INMUEBLES':{
+    color:'#74579D',
+    label:'INMUEBLES Real Estate',
+    icon:'🏘️',
+    links:[]
+  }
+};
+
+function linkTypeIcon(type){
+  if(type==='PowerBI')return'📊';
+  if(type==='Notion')return'📝';
+  if(type==='Sheets')return'📈';
+  if(type==='Docs')return'📄';
+  if(type==='Drive')return'📁';
+  return'🔗';
+}
+function linkTypeBg(type){
+  if(type==='PowerBI')return{bg:'#fff7e6',col:'#d97706'};
+  if(type==='Notion')return{bg:'#f4f4f4',col:'#37352f'};
+  if(type==='Sheets')return{bg:'#e8f5e9',col:'#0f6e40'};
+  if(type==='Docs')return{bg:'#e3f2fd',col:'#1565c0'};
+  if(type==='Drive')return{bg:'#fef3e0',col:'#8a5a00'};
+  return{bg:'#eef3fd',col:'#0d1b86'};
+}
+
+function viewLinks(){
+  const totalLinks=Object.values(LINKS_DATA).reduce((s,e)=>s+e.links.length,0);
+  setBanner('Links útiles del Holding',`${totalLinks} enlaces disponibles`);
+
+  const cards=Object.entries(LINKS_DATA).map(([key,data])=>{
+    const linksHtml=data.links.length>0
+      ?data.links.map(l=>{
+        const t=linkTypeBg(l.type);
+        return`<a href="${l.url}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fafafa;border-radius:3px;text-decoration:none;border-left:3px solid ${data.color};transition:background .15s;margin-bottom:7px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fafafa'">
+          <span style="font-size:18px;flex-shrink:0;">${linkTypeIcon(l.type)}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;color:#222;font-weight:600;">${l.name}</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${l.url.replace(/^https?:\/\//,'').slice(0,55)}${l.url.length>55?'...':''}</div>
+          </div>
+          <span style="font-size:9px;padding:3px 7px;border-radius:3px;background:${t.bg};color:${t.col};font-weight:700;flex-shrink:0;">${l.type}</span>
+          <span style="font-size:14px;color:${data.color};flex-shrink:0;">→</span>
+        </a>`;
+      }).join('')
+      :`<div style="padding:20px;text-align:center;color:#bbb;font-size:12px;font-style:italic;background:#fafafa;border-radius:3px;">Sin links agregados aún</div>`;
+
+    return`<div style="background:#fff;border-radius:4px;padding:16px 18px;border-top:3px solid ${data.color};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="font-size:20px;">${data.icon}</span>
+          <span style="font-size:14px;font-weight:700;color:${data.color};">${data.label}</span>
+        </div>
+        <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${data.color}22;color:${data.color};font-weight:700;">${data.links.length} ${data.links.length===1?'link':'links'}</span>
+      </div>
+      ${linksHtml}
+    </div>`;
+  }).join('');
+
+  return`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px;">
+      ${cards}
+    </div>`;
+}
+
+
+function pendNorm(item, tipo){
+  // Normaliza recurrente o específico a una estructura común
+  if(tipo==='rec'){
+    return {tarea:item.tarea,asignado:item.asignado||'—',empresa:item.empresa||'—',estado:item.estado||'',deadline:item.deadline,fechaReal:item.fechaReal,pilar:item.pilar||'',extra:item.frecuencia||'',extraLabel:'Frecuencia',link:item.link,tipo:'rec'};
+  } else {
+    return {tarea:item.tarea,asignado:item.asignado||'—',responsable:item.responsable||'—',empresa:item.empresa||'—',estado:item.estado||'',deadline:item.deadline,fechaReal:item.fechaReal,pilar:item.pilar||'',extra:item.fuente||'',extraLabel:'Fuente',link:item.link,tipo:'esp'};
+  }
+}
+
+function pendEstadoCls(e){if(e.includes('Entregado'))return 'g';if(e.includes('progreso'))return 'y';if(e.includes('Backlog'))return 'gr';return 'gr';}
+function pendEstadoBg(e){if(e.includes('Entregado'))return '#e8faf4';if(e.includes('progreso'))return '#fef3e0';if(e.includes('Backlog'))return '#f5f5f5';return '#f5f5f5';}
+function pendEstadoTxt(e){if(e.includes('Entregado'))return '#0f6e40';if(e.includes('progreso'))return '#8a5a00';return '#888';}
+function pendEmpCol(emp){return{QEMA:'#69231e',INLOG:'#0d1b86',ARDE:'#000000',SHARF:'#ff6568',INMUEBLES:'#74579D','LA RAMA':'#4586e4'}[emp]||'#999';}
+
+function pendDaysDiff(deadline){
+  if(!deadline)return null;
+  const d=new Date(deadline+'T00:00:00');
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
+}
+function pendDeadlineCls(deadline,estado){
+  if(estado.includes('Entregado'))return{bg:'#e8faf4',col:'#0f6e40',txt:'Entregado'};
+  const d=pendDaysDiff(deadline);
+  if(d===null)return{bg:'#f5f5f5',col:'#888',txt:'Sin fecha'};
+  if(d<0)return{bg:'#fdeef0',col:'#b62e2e',txt:`Vencido ${-d}d`};
+  if(d===0)return{bg:'#fff7e6',col:'#c07800',txt:'Hoy'};
+  if(d<=7)return{bg:'#fef3e0',col:'#8a5a00',txt:`${d}d`};
+  return{bg:'#eef3fd',col:'#0d1b86',txt:`${d}d`};
+}
+
+// Filtros globales para pendientes (compartidos entre vistas)
+let pendFilters={empresa:'all',asignado:'all',estado:'all',tipo:'all'};
+function pendSetFilter(key,val){pendFilters[key]=val;renderView(currentView);}
+function pendResetFilters(){pendFilters={empresa:'all',asignado:'all',estado:'all',tipo:'all'};renderView(currentView);}
+
+function pendApplyFilters(items){
+  return items.filter(t=>{
+    if(pendFilters.empresa!=='all'&&t.empresa!==pendFilters.empresa)return false;
+    if(pendFilters.asignado!=='all'&&t.asignado!==pendFilters.asignado)return false;
+    if(pendFilters.estado!=='all'){
+      if(pendFilters.estado==='entregado'&&!t.estado.includes('Entregado'))return false;
+      if(pendFilters.estado==='progreso'&&!t.estado.includes('progreso'))return false;
+      if(pendFilters.estado==='backlog'&&!t.estado.includes('Backlog'))return false;
+    }
+    if(pendFilters.tipo!=='all'&&t.tipo!==pendFilters.tipo)return false;
+    return true;
+  });
+}
+
+function pendBuildFilterBar(items,showTipo){
+  const empresas=[...new Set(items.map(t=>t.empresa))].filter(e=>e&&e!=='—').sort();
+  const asignados=[...new Set(items.map(t=>t.asignado))].filter(a=>a&&a!=='—').sort();
+  const filtroEmp=`<select onchange="pendSetFilter('empresa',this.value)" style="font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#333;cursor:pointer;">
+    <option value="all"${pendFilters.empresa==='all'?' selected':''}>Todas las empresas</option>
+    ${empresas.map(e=>`<option value="${e}"${pendFilters.empresa===e?' selected':''}>${e}</option>`).join('')}
+  </select>`;
+  const filtroAsig=`<select onchange="pendSetFilter('asignado',this.value)" style="font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#333;cursor:pointer;">
+    <option value="all"${pendFilters.asignado==='all'?' selected':''}>Todos los asignados</option>
+    ${asignados.map(a=>`<option value="${a}"${pendFilters.asignado===a?' selected':''}>${a}</option>`).join('')}
+  </select>`;
+  const filtroEst=`<select onchange="pendSetFilter('estado',this.value)" style="font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#333;cursor:pointer;">
+    <option value="all"${pendFilters.estado==='all'?' selected':''}>Todos los estados</option>
+    <option value="entregado"${pendFilters.estado==='entregado'?' selected':''}>✅ Entregado</option>
+    <option value="progreso"${pendFilters.estado==='progreso'?' selected':''}>🔄 En progreso</option>
+    <option value="backlog"${pendFilters.estado==='backlog'?' selected':''}>📥 Backlog</option>
+  </select>`;
+  const filtroTipo=showTipo?`<select onchange="pendSetFilter('tipo',this.value)" style="font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#333;cursor:pointer;">
+    <option value="all"${pendFilters.tipo==='all'?' selected':''}>Todos los tipos</option>
+    <option value="rec"${pendFilters.tipo==='rec'?' selected':''}>Recurrentes</option>
+    <option value="esp"${pendFilters.tipo==='esp'?' selected':''}>Específicos</option>
+  </select>`:'';
+  return`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;">Filtros</span>
+    ${filtroEmp}${filtroAsig}${filtroEst}${filtroTipo}
+    <button onclick="pendResetFilters()" style="font-size:10px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#666;cursor:pointer;">↻ Limpiar</button>
+  </div>`;
+}
+
+function pendBuildResumen(items){
+  const t=items.length;
+  const entregados=items.filter(x=>x.estado.includes('Entregado')).length;
+  const progreso=items.filter(x=>x.estado.includes('progreso')).length;
+  const backlog=items.filter(x=>x.estado.includes('Backlog')).length;
+  const vencidos=items.filter(x=>{if(x.estado.includes('Entregado'))return false;const d=pendDaysDiff(x.deadline);return d!==null&&d<0;}).length;
+  return`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;">
+    <div style="background:#fff;border-radius:3px;padding:12px 14px;border-top:3px solid #0d1b86;">
+      <div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:6px;">Total</div>
+      <div style="font-size:24px;font-weight:700;color:#0d1b86;">${t}</div>
+    </div>
+    <div style="background:#fff;border-radius:3px;padding:12px 14px;border-top:3px solid #22a869;">
+      <div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:6px;">Entregados</div>
+      <div style="font-size:24px;font-weight:700;color:#22a869;">${entregados}</div>
+    </div>
+    <div style="background:#fff;border-radius:3px;padding:12px 14px;border-top:3px solid #f5a623;">
+      <div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:6px;">En progreso</div>
+      <div style="font-size:24px;font-weight:700;color:#f5a623;">${progreso}</div>
+    </div>
+    <div style="background:#fff;border-radius:3px;padding:12px 14px;border-top:3px solid #888;">
+      <div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:6px;">Backlog</div>
+      <div style="font-size:24px;font-weight:700;color:#888;">${backlog}</div>
+    </div>
+    <div style="background:#fff;border-radius:3px;padding:12px 14px;border-top:3px solid #b62e2e;">
+      <div style="font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:6px;">Vencidos</div>
+      <div style="font-size:24px;font-weight:700;color:#b62e2e;">${vencidos}</div>
+    </div>
+  </div>`;
+}
+
+function pendBuildPorAsignado(items){
+  const byAsig={};
+  items.forEach(t=>{if(!byAsig[t.asignado])byAsig[t.asignado]=0;byAsig[t.asignado]++;});
+  const sorted=Object.entries(byAsig).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length)return`<div style="font-size:12px;color:#bbb;padding:12px;text-align:center;">Sin datos</div>`;
+  const max=sorted[0][1];
+  return sorted.map(([p,c])=>{
+    const w=Math.round(c/max*100);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:4px;">
+          <span style="font-size:12px;color:#333;font-weight:500;">${p}</span>
+          <span style="font-size:12px;font-weight:700;color:#0d1b86;">${c}</span>
+        </div>
+        <div style="height:5px;background:#f0f0f0;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:#0d1b86;border-radius:2px;"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pendBuildPorEmpresa(items){
+  const byEmp={};
+  items.forEach(t=>{if(!byEmp[t.empresa])byEmp[t.empresa]=0;byEmp[t.empresa]++;});
+  const sorted=Object.entries(byEmp).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length)return`<div style="font-size:12px;color:#bbb;padding:12px;text-align:center;">Sin datos</div>`;
+  const max=sorted[0][1];
+  return sorted.map(([e,c])=>{
+    const w=Math.round(c/max*100);
+    const col=pendEmpCol(e);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5;">
+      <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${col}22;color:${col};font-weight:700;flex-shrink:0;min-width:80px;text-align:center;">${e}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
+          <span style="font-size:12px;font-weight:700;color:${col};">${c}</span>
+        </div>
+        <div style="height:5px;background:#f0f0f0;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:${col};border-radius:2px;"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pendBuildTabla(items,showExtraCol,showResponsable){
+  if(!items.length)return`<div style="font-size:13px;color:#bbb;padding:20px;text-align:center;">No hay pendientes con los filtros actuales</div>`;
+  // Ordenar por deadline asc, vencidos primero
+  items.sort((a,b)=>{
+    if(!a.deadline)return 1;
+    if(!b.deadline)return -1;
+    return a.deadline.localeCompare(b.deadline);
+  });
+  const rows=items.map(t=>{
+    const dl=pendDeadlineCls(t.deadline,t.estado);
+    const empCol=pendEmpCol(t.empresa);
+    const estCls=pendEstadoBg(t.estado);
+    const estTxt=pendEstadoTxt(t.estado);
+    return`<tr>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#333;max-width:380px;">${t.tarea}</td>
+      ${showResponsable?`<td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#222;font-weight:600;white-space:nowrap;">${t.responsable||'—'}</td>`:''}
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#555;white-space:nowrap;">${t.asignado}</td>
+      ${showExtraCol?`<td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#666;">${t.extra||'—'}</td>`:''}
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${empCol}22;color:${empCol};font-weight:700;">${t.empresa}</span></td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#666;">${t.pilar||'—'}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${estCls};color:${estTxt};font-weight:600;white-space:nowrap;">${t.estado||'—'}</span></td>
+      <td style="padding:9px 10px;border-bottom:1px solid #f0f0f0;text-align:center;"><span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${dl.bg};color:${dl.col};font-weight:700;white-space:nowrap;">${dl.txt}</span></td>
+    </tr>`;
+  }).join('');
+  const asigLabel=showResponsable?'Seguimiento':'Asignado';
+  return`<table style="width:100%;border-collapse:collapse;">
+    <thead><tr style="text-align:left;color:#888;font-size:10px;letter-spacing:.5px;text-transform:uppercase;background:#fafafa;">
+      <th style="padding:9px 10px;font-weight:600;">Tarea</th>
+      ${showResponsable?`<th style="padding:9px 10px;font-weight:600;">Responsable</th>`:''}
+      <th style="padding:9px 10px;font-weight:600;">${asigLabel}</th>
+      ${showExtraCol?`<th style="padding:9px 10px;font-weight:600;">${items[0].extraLabel}</th>`:''}
+      <th style="padding:9px 10px;font-weight:600;text-align:center;">Empresa</th>
+      <th style="padding:9px 10px;font-weight:600;">Pilar</th>
+      <th style="padding:9px 10px;font-weight:600;text-align:center;">Estado</th>
+      <th style="padding:9px 10px;font-weight:600;text-align:center;">Deadline</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function pendBuildVencidos(items){
+  const vencidos=items.filter(t=>{
+    if(t.estado.includes('Entregado'))return false;
+    const d=pendDaysDiff(t.deadline);
+    return d!==null&&d<0;
+  }).sort((a,b)=>pendDaysDiff(a.deadline)-pendDaysDiff(b.deadline));
+  if(!vencidos.length)return`<div style="background:#fff;border-radius:3px;padding:18px 20px;margin-bottom:14px;border-top:3px solid #22a869;">
+    <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#22a869;"></span>Pendientes vencidos</div>
+    <div style="font-size:13px;color:#22a869;font-weight:600;text-align:center;padding:10px 0;">✓ No hay pendientes vencidos</div>
+  </div>`;
+  const rows=vencidos.map(t=>{
+    const diasV=-pendDaysDiff(t.deadline);
+    const empCol=pendEmpCol(t.empresa);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f5f5;">
+      <span style="font-size:11px;padding:4px 9px;border-radius:3px;background:#fdeef0;color:#b62e2e;font-weight:700;flex-shrink:0;min-width:90px;text-align:center;">Vencido ${diasV}d</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:#333;font-weight:500;">${t.tarea}</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">${t.asignado} · ${t.pilar||'—'} · Deadline: ${t.deadline||'—'}</div>
+      </div>
+      <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${empCol}22;color:${empCol};font-weight:700;flex-shrink:0;">${t.empresa}</span>
+    </div>`;
+  }).join('');
+  return`<div style="background:#fff;border-radius:3px;padding:14px 16px;margin-bottom:14px;border-top:3px solid #b62e2e;">
+    <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;"></span>Pendientes vencidos (${vencidos.length})</div>
+    <div style="max-height:280px;overflow-y:auto;">${rows}</div>
+  </div>`;
+}
+
+function pendBuildEstadoDonut(items){
+  const counts={'Entregado':0,'En progreso':0,'Backlog':0,'Sin estado':0};
+  items.forEach(t=>{
+    if(t.estado.includes('Entregado'))counts['Entregado']++;
+    else if(t.estado.includes('progreso'))counts['En progreso']++;
+    else if(t.estado.includes('Backlog'))counts['Backlog']++;
+    else counts['Sin estado']++;
+  });
+  const total=items.length;
+  if(total===0)return`<div style="font-size:12px;color:#bbb;padding:20px;text-align:center;">Sin datos</div>`;
+  const colors={'Entregado':'#22a869','En progreso':'#f5a623','Backlog':'#888','Sin estado':'#ccc'};
+
+  // Construir donut SVG
+  const cx=80,cy=80,r=60,strokeW=22;
+  let cum=0;
+  const segments=[];
+  Object.entries(counts).forEach(([label,val])=>{
+    if(val===0)return;
+    const pct=val/total;
+    const startA=cum*Math.PI*2-Math.PI/2;
+    const endA=(cum+pct)*Math.PI*2-Math.PI/2;
+    const x1=cx+r*Math.cos(startA);
+    const y1=cy+r*Math.sin(startA);
+    const x2=cx+r*Math.cos(endA);
+    const y2=cy+r*Math.sin(endA);
+    const largeArc=pct>0.5?1:0;
+    segments.push(`<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}" stroke="${colors[label]}" stroke-width="${strokeW}" fill="none" stroke-linecap="butt"/>`);
+    cum+=pct;
+  });
+
+  const legend=Object.entries(counts).filter(([,v])=>v>0).map(([label,val])=>{
+    const pct=Math.round(val/total*100);
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="width:10px;height:10px;border-radius:2px;background:${colors[label]};flex-shrink:0;"></div>
+      <div style="flex:1;display:flex;justify-content:space-between;font-size:11px;">
+        <span style="color:#555;">${label}</span>
+        <span style="color:#222;font-weight:700;">${val} <span style="color:#aaa;font-weight:400;">(${pct}%)</span></span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return`<div style="display:flex;align-items:center;gap:18px;">
+    <div style="position:relative;flex-shrink:0;">
+      <svg viewBox="0 0 160 160" width="160" height="160">${segments.join('')}</svg>
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+        <div style="font-size:24px;font-weight:700;color:#222;line-height:1;">${total}</div>
+        <div style="font-size:9px;color:#aaa;letter-spacing:.5px;text-transform:uppercase;margin-top:3px;">Total</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;">${legend}</div>
+  </div>`;
+}
+
+function pendBuildPorPilar(items){
+  const byPilar={};
+  items.forEach(t=>{
+    const p=t.pilar||'Sin pilar';
+    if(!byPilar[p])byPilar[p]=0;
+    byPilar[p]++;
+  });
+  const sorted=Object.entries(byPilar).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length)return`<div style="font-size:12px;color:#bbb;padding:20px;text-align:center;">Sin datos</div>`;
+  const pilarColors={'Cliente Feliz':'#4586e4','Equipo Feliz':'#74579D','Valor':'#22a869','Salud':'#f5a623','Impacto':'#2EC4A0','Sin pilar':'#ccc'};
+  const pilarIcons={'Cliente Feliz':'😊','Equipo Feliz':'🙌','Valor':'💰','Salud':'🏥','Impacto':'🌱','Sin pilar':'❓'};
+  const max=sorted[0][1];
+  return sorted.map(([p,c])=>{
+    const w=Math.round(c/max*100);
+    const col=pilarColors[p]||'#999';
+    const icon=pilarIcons[p]||'';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:4px;">
+          <span style="font-size:12px;color:#333;font-weight:500;">${icon} ${p}</span>
+          <span style="font-size:12px;font-weight:700;color:${col};">${c}</span>
+        </div>
+        <div style="height:5px;background:#f0f0f0;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:${col};border-radius:2px;"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pendBuildPorFuente(items){
+  const byF={};
+  items.forEach(t=>{
+    const f=t.extra||'Sin fuente';
+    if(!byF[f])byF[f]=0;
+    byF[f]++;
+  });
+  const sorted=Object.entries(byF).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length)return`<div style="font-size:12px;color:#bbb;padding:20px;text-align:center;">Sin datos</div>`;
+  const max=sorted[0][1];
+  const colors=['#0d1b86','#4586e4','#22a869','#f5a623','#74579D','#b62e2e','#2EC4A0','#ff6568'];
+  return sorted.map(([f,c],i)=>{
+    const w=Math.round(c/max*100);
+    const col=colors[i%colors.length];
+    return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f5f5;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:4px;">
+          <span style="font-size:12px;color:#333;font-weight:500;">📋 ${f}</span>
+          <span style="font-size:12px;font-weight:700;color:${col};">${c}</span>
+        </div>
+        <div style="height:5px;background:#f0f0f0;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:${col};border-radius:2px;"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewRecurrentes(){
+  setBanner('Pendientes Recurrentes','Tareas recurrentes del equipo');
+  pendFilters.tipo='all';
+  const allRecs=RECURRENTES.map(r=>pendNorm(r,'rec'));
+  const filtered=pendApplyFilters(allRecs);
+  const noEntregados=filtered.filter(t=>!t.estado.includes('Entregado'));
+
+  return`
+    ${pendBuildFilterBar(allRecs,false)}
+    ${pendBuildResumen(filtered)}
+
+    ${pendBuildVencidos(filtered)}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #0d1b86;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;"></span>Estado de pendientes</div>
+        ${pendBuildEstadoDonut(filtered)}
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #22a869;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#22a869;"></span>Pendientes por pilar</div>
+        ${pendBuildPorPilar(filtered)}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #4586e4;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#4586e4;"></span>Pendientes por asignado</div>
+        ${pendBuildPorAsignado(filtered)}
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #74579D;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#74579D;"></span>Pendientes por empresa</div>
+        ${pendBuildPorEmpresa(filtered)}
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:3px;padding:14px 16px;">
+      <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;"></span>Recurrentes pendientes (${noEntregados.length} de ${filtered.length})</div>
+      ${pendBuildTabla(noEntregados,true)}
+    </div>`;
+}
+
+function viewEspecificos(){
+  setBanner('Pendientes Específicos','Tareas que salen de reuniones por empresa');
+  pendFilters.tipo='all';
+  const allEsps=ESPECIFICOS.map(e=>pendNorm(e,'esp'));
+  const filtered=pendApplyFilters(allEsps);
+  const noEntregados=filtered.filter(t=>!t.estado.includes('Entregado'));
+
+  return`
+    ${pendBuildFilterBar(allEsps,false)}
+    ${pendBuildResumen(filtered)}
+
+    ${pendBuildVencidos(filtered)}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #0d1b86;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;"></span>Estado de pendientes</div>
+        ${pendBuildEstadoDonut(filtered)}
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #f5a623;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#f5a623;"></span>Pendientes por fuente / reunión</div>
+        ${pendBuildPorFuente(filtered)}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #4586e4;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#4586e4;"></span>Por asignado de seguimiento</div>
+        ${pendBuildPorAsignado(filtered)}
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #74579D;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#74579D;"></span>Pendientes por empresa</div>
+        ${pendBuildPorEmpresa(filtered)}
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #22a869;">
+        <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#22a869;"></span>Pendientes por pilar</div>
+        ${pendBuildPorPilar(filtered)}
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:3px;padding:14px 16px;">
+      <div style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;"></span>Específicos pendientes (${noEntregados.length} de ${filtered.length})</div>
+      ${pendBuildTabla(noEntregados,true,true)}
+    </div>`;
+}
+
 function viewCalendario(tasks){
   setBanner('Calendario de deadlines',`${MONTHS[calM]} ${calY}`);
+  // Combinar recurrentes + específicos
+  const allItems=[...RECURRENTES.map(r=>pendNorm(r,'rec')),...ESPECIFICOS.map(e=>pendNorm(e,'esp'))];
+  const itemsFiltered=pendApplyFilters(allItems);
+
   function renderCal(y,m){
     const first=new Date(y,m,1);let sd=first.getDay()-1;if(sd<0)sd=6;
     const dim=new Date(y,m+1,0).getDate();const dp=new Date(y,m,0).getDate();
-    const byDate={};tasks.forEach(t=>{if(t.deadline){if(!byDate[t.deadline])byDate[t.deadline]=[];byDate[t.deadline].push(t);}});
+    const byDate={};itemsFiltered.forEach(t=>{if(t.deadline){if(!byDate[t.deadline])byDate[t.deadline]=[];byDate[t.deadline].push(t);}});
     let days='';
     for(let i=sd-1;i>=0;i--)days+=`<div class="cal-day outside"><div class="cal-dnum">${dp-i}</div></div>`;
     for(let d=1;d<=dim;d++){
       const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const dt=byDate[ds]||[];
       const isT=(y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate());
-      const evs=dt.slice(0,2).map(t=>{const ec2={QEMA:'qema',INLOG:'inlog',ARDE:'arde',Holding:'holding'}[t.empresa]||'holding';const done=t.estado.includes('Entregado')?' done':'';return`<div class="cal-ev ${ec2}${done}" title="${t.tarea} — ${t.asignado}">${t.tarea}</div>`;}).join('');
+      const evs=dt.slice(0,2).map(t=>{
+        const empCol=pendEmpCol(t.empresa);
+        const done=t.estado.includes('Entregado')?'opacity:.5;text-decoration:line-through;':'';
+        const tipoBadge=t.tipo==='rec'?'R':'E';
+        return`<div class="cal-ev" style="background:${empCol}15;color:${empCol};border-left:3px solid ${empCol};${done}padding:3px 5px;margin-bottom:2px;font-size:10px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="[${tipoBadge}] ${t.tarea} — ${t.asignado}"><b style="font-size:8px;background:${empCol};color:#fff;padding:0 3px;border-radius:2px;margin-right:3px;">${tipoBadge}</b>${t.tarea}</div>`;
+      }).join('');
       const more=dt.length>2?`<div class="cal-more">+${dt.length-2} más</div>`:'';
       days+=`<div class="cal-day${isT?' today':''}"><div class="cal-dnum">${d}</div>${evs}${more}</div>`;
     }
@@ -544,25 +1064,40 @@ function viewCalendario(tasks){
     document.getElementById('banner-badge').textContent=`${MONTHS[m]} ${y}`;
     calY=y;calM=m;
   }
-  const upcoming=tasks.filter(t=>{if(t.estado.includes('Entregado')||!t.deadline)return false;const diff=Math.round((new Date(t.deadline+'T00:00:00')-today)/86400000);return diff>=0&&diff<=7;}).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  const upcoming=itemsFiltered.filter(t=>{if(t.estado.includes('Entregado')||!t.deadline)return false;const diff=pendDaysDiff(t.deadline);return diff>=0&&diff<=7;}).sort((a,b)=>a.deadline.localeCompare(b.deadline));
   setTimeout(()=>{
     renderCal(calY,calM);
     document.getElementById('cal-prev').onclick=()=>{let m=calM-1,y=calY;if(m<0){m=11;y--;}renderCal(y,m);};
     document.getElementById('cal-next').onclick=()=>{let m=calM+1,y=calY;if(m>11){m=0;y++;}renderCal(y,m);};
   },30);
+  const empresas=['QEMA','INLOG','ARDE','SHARF','INMUEBLES','LA RAMA'];
   return`
-    <div class="card" style="margin-bottom:14px;">
+    ${pendBuildFilterBar(allItems,true)}
+    <div style="background:#fff;border-radius:3px;padding:14px 16px;margin-bottom:14px;">
       <div class="cal-hdr">
-        <div class="card-lbl" style="margin:0;"><span class="cdot coral"></span>Deadlines</div>
+        <div class="card-lbl" style="margin:0;"><span class="cdot coral"></span>Deadlines · Recurrentes + Específicos</div>
         <div class="cal-nav"><button class="cal-nbtn" id="cal-prev">‹</button><div class="cal-month" id="cal-month"></div><button class="cal-nbtn" id="cal-next">›</button></div>
-        <div class="cal-legend">${['QEMA','INLOG','ARDE'].map((e,i)=>{const bg=['#eef3fd','#f0ebfd','#fdeef0'][i];const tc=['#0d1b86','#4a2d8a','#b62e2e'][i];return`<span style="font-size:10px;padding:2px 8px;border-radius:3px;background:${bg};color:${tc};font-weight:600;">${e}</span>`;}).join('')}</div>
+        <div class="cal-legend" style="display:flex;gap:6px;flex-wrap:wrap;">${empresas.map(e=>{const c=pendEmpCol(e);return`<span style="font-size:9px;padding:2px 7px;border-radius:3px;background:${c}22;color:${c};font-weight:600;">${e}</span>`;}).join('')}</div>
+      </div>
+      <div style="display:flex;gap:10px;margin:8px 0;font-size:10px;color:#666;">
+        <span><b style="background:#0d1b86;color:#fff;padding:1px 4px;border-radius:2px;font-size:8px;">R</b> Recurrente</span>
+        <span><b style="background:#888;color:#fff;padding:1px 4px;border-radius:2px;font-size:8px;">E</b> Específico</span>
       </div>
       <div class="cal-grid-hdr">${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
-    <div class="card">
-      <div class="card-lbl"><span class="cdot teal"></span>Próximos 7 días</div>
-      ${upcoming.length?upcoming.map(t=>{const d=daysLeft(t.deadline,t.estado);return`<div class="dl-item"><div><div class="dl-tarea">${t.tarea}</div><div class="dl-meta">${t.asignado} · ${t.area}</div></div><div class="dl-right">${empTag(t.empresa)}<span class="dtag ${d.cls}">${d.label}</span></div></div>`;}).join(''):'<div class="empty">Sin deadlines en los próximos 7 días</div>'}
+    <div style="background:#fff;border-radius:3px;padding:14px 16px;">
+      <div class="card-lbl"><span class="cdot teal"></span>Próximos 7 días (${upcoming.length})</div>
+      ${upcoming.length?upcoming.map(t=>{const d=pendDeadlineCls(t.deadline,t.estado);const empCol=pendEmpCol(t.empresa);const tipoB=t.tipo==='rec'?'R':'E';return`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;color:#333;font-weight:500;"><b style="background:${empCol};color:#fff;padding:1px 5px;border-radius:2px;font-size:9px;margin-right:5px;">${tipoB}</b>${t.tarea}</div>
+          <div style="font-size:10px;color:#888;margin-top:2px;">${t.asignado} · ${t.pilar||'—'}</div>
+        </div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <span style="font-size:10px;padding:3px 7px;border-radius:3px;background:${empCol}22;color:${empCol};font-weight:700;">${t.empresa}</span>
+          <span style="font-size:10px;padding:3px 7px;border-radius:3px;background:${d.bg};color:${d.col};font-weight:700;">${d.txt}</span>
+        </div>
+      </div>`;}).join(''):'<div style="font-size:12px;color:#bbb;padding:14px;text-align:center;">Sin deadlines en los próximos 7 días</div>'}
     </div>`;
 }
 
@@ -666,23 +1201,23 @@ const SC_EMPRESAS={
   }},
   SHARF:{label:'SHARF — Logística',years:{
     2025:{
-      Enero:{  'Ingresos Netos':{t:13.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:1.2,r:1.6,p:'Valor',u:'score'},'MB Aduanas':{t:57.3,r:54.7,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:0.8,r:1.1,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:11,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:310,p:'Cliente Feliz',u:'num'}},
-      Febrero:{'Ingresos Netos':{t:12.8,r:15.3,p:'Valor',u:'score'},'EBITDA':{t:0.3,r:1.4,p:'Valor',u:'score'},'MB Aduanas':{t:54.9,r:61.2,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:31.1,r:1.6,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:7,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:19,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:293,p:'Cliente Feliz',u:'num'}},
-      Marzo:{  'Ingresos Netos':{t:13.1,r:14.6,p:'Valor',u:'score'},'EBITDA':{t:1.3,r:1.7,p:'Valor',u:'score'},'MB Aduanas':{t:61.0,r:51.9,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:31.1,r:1.8,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:10,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:3,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:15,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:323,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:85.2,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:84.3,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:85,r:71.3,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:85,p:'Equipo Feliz',u:'pct'}},
-      Abril:{  'Ingresos Netos':{t:14.9,r:13.5,p:'Valor',u:'score'},'EBITDA':{t:1.6,r:0.8,p:'Valor',u:'score'},'MB Aduanas':{t:58.4,r:46.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.5,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:11,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:20,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:307,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:80.7,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:86.8,p:'Cliente Feliz',u:'pct'}},
-      Mayo:{   'Ingresos Netos':{t:15.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:1.5,r:0.8,p:'Valor',u:'score'},'MB Aduanas':{t:46.5,r:47.5,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.2,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:19,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:366,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87.8,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:91.3,p:'Cliente Feliz',u:'pct'}},
-      Junio:{  'Ingresos Netos':{t:14.6,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:1.5,r:0.7,p:'Valor',u:'score'},'MB Aduanas':{t:57.5,r:49.4,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:0.8,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:13,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:20,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:353,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:90.5,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.4,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:85,r:68,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:86,p:'Equipo Feliz',u:'pct'}},
-      Julio:{  'Ingresos Netos':{t:15.2,r:13.0,p:'Valor',u:'score'},'EBITDA':{t:2.0,r:0.6,p:'Valor',u:'score'},'MB Aduanas':{t:58.3,r:54.5,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.4,r:0.6,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:21,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:84.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.7,p:'Cliente Feliz',u:'pct'}},
-      Agosto:{ 'Ingresos Netos':{t:15.8,r:13.5,p:'Valor',u:'score'},'EBITDA':{t:1.4,r:1.4,p:'Valor',u:'score'},'MB Aduanas':{t:61.8,r:56.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.6,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:14,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:377,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:89.5,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.1,p:'Cliente Feliz',u:'pct'}},
-      Septiembre:{'Ingresos Netos':{t:15.1,r:12.3,p:'Valor',u:'score'},'EBITDA':{t:2.1,r:0.9,p:'Valor',u:'score'},'MB Aduanas':{t:55.9,r:45.0,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.1,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:14,r:21,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:91.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:91.9,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:87,r:73.8,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:85,p:'Equipo Feliz',u:'pct'}},
-      Octubre:{'Ingresos Netos':{t:16.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:2.4,r:2.0,p:'Valor',u:'score'},'MB Aduanas':{t:58.7,r:48.2,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.7,r:1.4,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:15,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:390,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:93.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:88.6,p:'Cliente Feliz',u:'pct'}},
-      Noviembre:{'Ingresos Netos':{t:15.7,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:2.3,r:1.2,p:'Valor',u:'score'},'MB Aduanas':{t:61.9,r:48.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:1.1,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:15,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:14,r:19,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:500,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:91.9,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:86.4,p:'Cliente Feliz',u:'pct'}},
-      Diciembre:{'Ingresos Netos':{t:15.8,r:14.4,p:'Valor',u:'score'},'EBITDA':{t:2.5,r:1.8,p:'Valor',u:'score'},'MB Aduanas':{t:66.2,r:41.9,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:0.9,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:21,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:10,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:14,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:629,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:86,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:82.8,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:87,r:71.3,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:83,p:'Equipo Feliz',u:'pct'}},
+      Enero:{  'Ingresos Netos':{t:13.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:1.2,r:1.6,p:'Valor',u:'score'},'MB Aduanas':{t:57.3,r:54.7,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:0.8,r:1.1,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:11,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:310,p:'Cliente Feliz',u:'num'},'MB DU PE':{t:-120000,r:40000,p:'Valor',u:'money'},'FedEx Revenue':{t:402000,r:466000,p:'Valor',u:'money'}},
+      Febrero:{'Ingresos Netos':{t:12.8,r:15.3,p:'Valor',u:'score'},'EBITDA':{t:0.3,r:1.4,p:'Valor',u:'score'},'MB Aduanas':{t:54.9,r:61.2,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:31.1,r:1.6,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:7,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:19,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:293,p:'Cliente Feliz',u:'num'},'MB DU PE':{t:-40000,r:-20000,p:'Valor',u:'money'},'FedEx Revenue':{t:346000,r:455000,p:'Valor',u:'money'}},
+      Marzo:{  'Ingresos Netos':{t:13.1,r:14.6,p:'Valor',u:'score'},'EBITDA':{t:1.3,r:1.7,p:'Valor',u:'score'},'MB Aduanas':{t:61.0,r:51.9,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:31.1,r:1.8,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:10,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:3,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:15,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:300,r:323,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:85.2,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:84.3,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:85,r:71.3,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:85,p:'Equipo Feliz',u:'pct'},'MB DU PE':{t:30000,r:-60000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:449000,p:'Valor',u:'money'}},
+      Abril:{  'Ingresos Netos':{t:14.9,r:13.5,p:'Valor',u:'score'},'EBITDA':{t:1.6,r:0.8,p:'Valor',u:'score'},'MB Aduanas':{t:58.4,r:46.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.5,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:11,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:2,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:20,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:307,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:80.7,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:86.8,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:-80000,r:-20000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:445000,p:'Valor',u:'money'}},
+      Mayo:{   'Ingresos Netos':{t:15.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:1.5,r:0.8,p:'Valor',u:'score'},'MB Aduanas':{t:46.5,r:47.5,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.2,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:19,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:366,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87.8,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:91.3,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:210000,r:20000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:492000,p:'Valor',u:'money'}},
+      Junio:{  'Ingresos Netos':{t:14.6,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:1.5,r:0.7,p:'Valor',u:'score'},'MB Aduanas':{t:57.5,r:49.4,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:0.8,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:13,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:17,r:20,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:353,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:90.5,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.4,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:85,r:68,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:86,p:'Equipo Feliz',u:'pct'},'MB DU PE':{t:190000,r:-100000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:505000,p:'Valor',u:'money'}},
+      Julio:{  'Ingresos Netos':{t:15.2,r:13.0,p:'Valor',u:'score'},'EBITDA':{t:2.0,r:0.6,p:'Valor',u:'score'},'MB Aduanas':{t:58.3,r:54.5,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.4,r:0.6,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:21,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:84.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.7,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:210000,r:60000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:460000,p:'Valor',u:'money'}},
+      Agosto:{ 'Ingresos Netos':{t:15.8,r:13.5,p:'Valor',u:'score'},'EBITDA':{t:1.4,r:1.4,p:'Valor',u:'score'},'MB Aduanas':{t:61.8,r:56.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.6,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:14,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:16,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:377,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:89.5,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:92.1,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:350000,r:70000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:538000,p:'Valor',u:'money'}},
+      Septiembre:{'Ingresos Netos':{t:15.1,r:12.3,p:'Valor',u:'score'},'EBITDA':{t:2.1,r:0.9,p:'Valor',u:'score'},'MB Aduanas':{t:55.9,r:45.0,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.1,r:1.0,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:4,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:14,r:21,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:91.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:91.9,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:87,r:73.8,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:85,p:'Equipo Feliz',u:'pct'},'MB DU PE':{t:390000,r:-40000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:575000,p:'Valor',u:'money'}},
+      Octubre:{'Ingresos Netos':{t:16.2,r:13.7,p:'Valor',u:'score'},'EBITDA':{t:2.4,r:2.0,p:'Valor',u:'score'},'MB Aduanas':{t:58.7,r:48.2,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.7,r:1.4,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:12,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:15,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:390,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:93.4,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:88.6,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:410000,r:-40000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:641000,p:'Valor',u:'money'}},
+      Noviembre:{'Ingresos Netos':{t:15.7,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:2.3,r:1.2,p:'Valor',u:'score'},'MB Aduanas':{t:61.9,r:48.8,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:1.1,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:15,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:5,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:14,r:19,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:500,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:91.9,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:86.4,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:410000,r:10000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:566000,p:'Valor',u:'money'}},
+      Diciembre:{'Ingresos Netos':{t:15.8,r:14.4,p:'Valor',u:'score'},'EBITDA':{t:2.5,r:1.8,p:'Valor',u:'score'},'MB Aduanas':{t:66.2,r:41.9,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:0.9,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:21,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:10,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:16,r:14,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:629,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:86,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:92,r:82.8,p:'Cliente Feliz',u:'pct'},'Satisfacción Cliente':{t:87,r:71.3,p:'Cliente Feliz',u:'pct'},'Clima Laboral':{t:85,r:83,p:'Equipo Feliz',u:'pct'},'MB DU PE':{t:380000,r:80000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:618000,p:'Valor',u:'money'}},
     },
     2026:{
-      Enero:{  'Ingresos Netos':{t:14.1,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:1.4,r:1.0,p:'Valor',u:'score'},'MB Aduanas':{t:49.2,r:48.4,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:0.9,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:9,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:78.7,p:'Cliente Feliz',u:'pct'}},
-      Febrero:{'Ingresos Netos':{t:13.6,r:13.1,p:'Valor',u:'score'},'EBITDA':{t:1.1,r:1.2,p:'Valor',u:'score'},'MB Aduanas':{t:55.5,r:55.3,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.2,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:17,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:329,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:88.3,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:67.0,p:'Cliente Feliz',u:'pct'}},
-      Marzo:{  'Ingresos Netos':{t:14.2,r:13.9,p:'Valor',u:'score'},'EBITDA':{t:1.7,r:1.3,p:'Valor',u:'score'},'MB Aduanas':{t:50.3,r:59.6,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.5,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:23,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:8,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:296,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87.8,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:76.4,p:'Cliente Feliz',u:'pct'}},
+      Enero:{  'Ingresos Netos':{t:14.1,r:12.4,p:'Valor',u:'score'},'EBITDA':{t:1.4,r:1.0,p:'Valor',u:'score'},'MB Aduanas':{t:49.2,r:48.4,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.2,r:0.9,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:9,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:356,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:78.7,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:80000,r:100000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:627000,p:'Valor',u:'money'}},
+      Febrero:{'Ingresos Netos':{t:13.6,r:13.1,p:'Valor',u:'score'},'EBITDA':{t:1.1,r:1.2,p:'Valor',u:'score'},'MB Aduanas':{t:55.5,r:55.3,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.2,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:16,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:6,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:17,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:329,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:88.3,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:67.0,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:70000,r:-60000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:462000,p:'Valor',u:'money'}},
+      Marzo:{  'Ingresos Netos':{t:14.2,r:13.9,p:'Valor',u:'score'},'EBITDA':{t:1.7,r:1.3,p:'Valor',u:'score'},'MB Aduanas':{t:50.3,r:59.6,p:'Valor',u:'pct'},'Ing. Carga Int.':{t:1.3,r:1.5,p:'Valor',u:'score'},'Morosidad Local':{t:8,r:23,p:'Salud',u:'pct',inv:true},'Morosidad >30d':{t:4,r:8,p:'Salud',u:'pct',inv:true},'SG&A/Ventas':{t:18,r:18,p:'Salud',u:'pct',inv:true},'Prom Paq/Dia FedEx':{t:null,r:296,p:'Cliente Feliz',u:'num'},'NSL DU':{t:90,r:87.8,p:'Cliente Feliz',u:'pct'},'MBG NSL IB FedEx':{t:91,r:76.4,p:'Cliente Feliz',u:'pct'},'MB DU PE':{t:100000,r:-50000,p:'Valor',u:'money'},'FedEx Revenue':{t:null,r:506000,p:'Valor',u:'money'}},
     }
   }},
   ARDE:{label:'ARDE — Retail / Suscripción',years:{
@@ -693,7 +1228,7 @@ const SC_EMPRESAS={
     }
   }},
   INMUEBLES:{label:'INMUEBLES — Real Estate',years:{
-    2025:{
+    2026:{
       Enero:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Satisfacción inquilino':{t:80,r:80,p:'Cliente Feliz',u:'pct'},'Pago Mamina dentro fecha':{t:100,r:100,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175156,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151245,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
       Febrero:{'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175260,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151560,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
       Marzo:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:182233,r:182662,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:153360,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
@@ -708,13 +1243,19 @@ function scSetGenMes(m){scGenMes=m;renderView('scorecard');}
 
 function scCalcPct(t,r,inv){if(t===null||r===null||t===undefined||r===undefined)return null;if(inv&&r===0)return 100;if(inv&&t===0&&r>0)return 0;if(t===0)return r===0?100:null;return inv?(t/r)*100:(r/t)*100;}
 function scSemCls(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
+function scNum(n,maxDec){
+  if(n===null||n===undefined)return n;
+  const num=Number(n);
+  if(Number.isInteger(num))return num;
+  return parseFloat(num.toFixed(maxDec||2));
+}
 function scFmtVal(v,u,emp){
   if(v===null||v===undefined)return'—';
   const cur=MONEDA[emp]||'';
-  if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${(a/1000000).toFixed(1)}M`;if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}
-  if(u==='pct')return v+'%';
-  if(u==='score')return v.toFixed?v.toFixed(1):v;
-  return String(v);
+  if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}
+  if(u==='pct')return scNum(v,2)+'%';
+  if(u==='score')return scNum(v,2);
+  return String(scNum(v,2));
 }
 function scFmtTrend(lastR,prevR,inv){
   if(lastR===null||lastR===undefined||prevR===null||prevR===undefined)return'';
@@ -787,7 +1328,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
   const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
   const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
   function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
-  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
 
   const pilarData=PILARES.map(pilar=>{
     if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
@@ -876,7 +1417,7 @@ function buildRadarAlertas(aggData,empName,alertas,periodo){
   const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
   const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
   function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
-  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
 
   const pilarData=PILARES.map(pilar=>{
     if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
@@ -975,7 +1516,7 @@ function buildRadarSVG(aggData,empName){
   const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
   const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
   function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
-  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[empName]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
 
   const pilarData=PILARES.map(pilar=>{
     if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
@@ -1149,7 +1690,7 @@ function buildScorecardGeneral(){
     const PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
     const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
     function sem(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
-    function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000)return`${s}${cur}${(a/1000).toFixed(0)}K`;return`${s}${cur}${v}`;}if(u==='pct')return v+'%';if(u==='score')return v.toFixed?v.toFixed(1):v;return String(v);}
+    function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
     const pilarData=PILARES.map(pilar=>{
       if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
       const kpis=Object.entries(agg).filter(([,v])=>v.p===pilar);
@@ -1185,7 +1726,7 @@ function buildScorecardGeneral(){
       }
     });
     const ttData=JSON.stringify(pilarData.map(d=>({pilar:d.pilar,pct:d.pct,cls:d.cls,kpis:d.kpis.map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))})));
-    return`<div style="background:#fff;border-radius:3px;padding:14px;border-top:3px solid ${empCol};">
+    return`<div style="background:#fff;border-radius:3px;padding:14px;border-top:3px solid ${empCol};" data-emp="${emp}" data-tooltip='${ttData.replace(/'/g,"&apos;")}'>
       <div style="font-size:11px;font-weight:700;color:${empCol};margin-bottom:10px;">${EMP_LABELS[emp]}</div>
       <div style="position:relative;display:flex;justify-content:center;">
         <svg id="${radarId}" viewBox="0 0 260 260" width="100%" height="200" style="overflow:visible;">
@@ -1195,7 +1736,6 @@ function buildScorecardGeneral(){
         </svg>
         <div id="${ttId}" class="radar-tooltip" style="min-width:180px;"></div>
       </div>
-      <script>window['_genTT_${emp}']=JSON.parse('${ttData.replace(/'/g,"\\'")}');<\/script>
     </div>`;
   }).join('');
 
@@ -1540,7 +2080,7 @@ async function generarConclusionesGeneral(){
   if(!btn||!out)return;
   btn.disabled=true;btn.textContent='Analizando...';
   out.innerHTML=`<div class="conclusiones-loading"><div class="loading-dots"><span></span><span></span><span></span></div> Claude está analizando el holding...</div>`;
-  const EMPRESAS=['QEMA','INLOG','ARDE','SHARF'];
+  const EMPRESAS=['QEMA','INLOG','ARDE','SHARF','INMUEBLES'];
   const lineas=EMPRESAS.map(emp=>{
     const empData=SC_EMPRESAS[emp];
     const ys=Object.keys(empData.years).map(Number).sort((a,b)=>b-a);
@@ -1604,12 +2144,10 @@ function renderView(view){
   destroyCharts();currentView=view;
   const tasks=TASKS;
   let html='';
-  if(view==='general')    html=viewGeneral(tasks);
-  else if(view==='qema')  html=viewEmpresa('QEMA',tasks.filter(t=>t.empresa==='QEMA'));
-  else if(view==='inlog') html=viewEmpresa('INLOG',tasks.filter(t=>t.empresa==='INLOG'));
-  else if(view==='arde')  html=viewEmpresa('ARDE',tasks.filter(t=>t.empresa==='ARDE'));
-  else if(view==='calendario') html=viewCalendario(tasks);
-  else if(view==='equipo') html=viewEquipo(tasks);
+  if(view==='calendario') html=viewCalendario(tasks);
+  else if(view==='recurrentes') html=viewRecurrentes();
+  else if(view==='especificos') html=viewEspecificos();
+  else if(view==='links') html=viewLinks();
   else if(view==='scorecard') html=buildScorecard();
   document.getElementById('body').innerHTML=html;
 
@@ -1712,11 +2250,16 @@ function renderView(view){
       ['QEMA','INLOG','ARDE','SHARF','INMUEBLES'].forEach(function(emp){
         const svgEl2=document.getElementById('gen-radar-'+emp);
         const tt2=document.getElementById('gen-tt-'+emp);
-        const pilarData2=window['_genTT_'+emp]||[];
+        if(!svgEl2||!tt2)return;
+        const wrapper=svgEl2.closest('[data-tooltip]');
+        let pilarData2=[];
+        if(wrapper){
+          try{pilarData2=JSON.parse(wrapper.getAttribute('data-tooltip').replace(/&apos;/g,"'"));}catch(e){pilarData2=[];}
+        }
         const COLS2={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
         const BGCOLS2={g:'#e8faf4',y:'#fef3e0',r:'#fdeef0',gr:'#f5f5f5'};
         const TXTCOLS2={g:'#0f6e40',y:'#8a5a00',r:'#8a1a1a',gr:'#888'};
-        if(!svgEl2||!tt2||!pilarData2.length)return;
+        if(!pilarData2.length)return;
         svgEl2.querySelectorAll('circle[data-pilar]').forEach(function(c){
           c.addEventListener('mouseenter',function(e){
             const name=c.getAttribute('data-pilar');
