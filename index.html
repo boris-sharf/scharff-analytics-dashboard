@@ -213,7 +213,20 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 .heatmap-table th.pilar-col{text-align:left;min-width:90px;}
 .heatmap-table td{padding:5px 6px;text-align:center;border:1px solid #f5f5f5;}
 .heatmap-table td.pilar-name{text-align:left;font-size:11px;font-weight:600;color:#333;white-space:nowrap;padding-left:0;}
-.hm-cell{display:inline-block;width:100%;min-width:36px;padding:4px 2px;border-radius:3px;font-size:10px;font-weight:700;text-align:center;}
+.hm-cell{display:inline-block;width:100%;min-width:36px;padding:4px 2px;border-radius:3px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;transition:transform .1s;}
+.hm-cell:hover{transform:scale(1.08);box-shadow:0 0 0 2px rgba(13,27,134,.2);}
+.hm-tooltip{position:fixed;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 4px 4px 0;padding:12px 14px;min-width:280px;max-width:340px;max-height:420px;overflow-y:auto;pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);}
+.hm-tooltip.show{opacity:1;}
+.hm-tt-hdr{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;}
+.hm-tt-pilar{font-size:13px;font-weight:700;color:#222;}
+.hm-tt-pct{font-size:11px;font-weight:700;padding:3px 9px;border-radius:3px;}
+.hm-tt-row{padding:6px 0;border-bottom:1px solid #f5f5f5;}
+.hm-tt-row:last-child{border-bottom:none;}
+.hm-tt-row-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px;}
+.hm-tt-name{font-size:11px;color:#333;font-weight:500;}
+.hm-tt-kpct{font-size:11px;font-weight:700;white-space:nowrap;}
+.hm-tt-vals{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:#888;}
+.hm-tt-vals b{color:#222;}
 .hm-g{background:#e8faf4;color:#0f6e40;}.hm-y{background:#fef3e0;color:#8a5a00;}.hm-r{background:#fdeef0;color:#8a1a1a;}.hm-gr{background:#f5f5f5;color:#bbb;}
 .heatmap-legend{display:flex;gap:14px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap;}
 .hm-leg{display:flex;align-items:center;gap:5px;font-size:10px;color:#888;}
@@ -1503,6 +1516,74 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
   return{radarHtml,alertasHtml2};
 }
 
+// Helper: construye el HTML del tooltip de una celda del heatmap
+// kpisInfo: array de {name, real, target, pct, cls, inv, u, pilar?}
+// title: nombre del pilar/empresa
+// subtitle: mes
+// avgPct: % promedio del pilar en ese mes
+// groupByPilar: si true, agrupa por pilar (para heatmap general)
+function hmBuildTooltipHTML(title,subtitle,avgPct,kpisInfo,groupByPilar){
+  const COLS={g:'#22a869',y:'#f5a623',r:'#b62e2e',gr:'#ccc'};
+  const BGCOLS={g:'#e8faf4',y:'#fef3e0',r:'#fdeef0',gr:'#f5f5f5'};
+  const TXTCOLS={g:'#0f6e40',y:'#8a5a00',r:'#8a1a1a',gr:'#888'};
+  const PILAR_ICONS={'Cliente Feliz':'😊','Equipo Feliz':'🙌','Valor':'💰','Salud':'🏥','Impacto':'🌱'};
+  function sem(p){return p===null||p===undefined?'gr':p>=95?'g':p>=80?'y':'r';}
+  function renderKpi(k){
+    const kcls=sem(k.pct);
+    const kcol=COLS[kcls];
+    const pctTxt=k.pct!==null&&k.pct!==undefined?Math.round(k.pct)+'%':'—';
+    const invHint=k.inv?'<span style="font-size:9px;color:#999;margin-right:3px;" title="Menos es mejor">↓</span>':'';
+    return`<div class="hm-tt-row">
+      <div class="hm-tt-row-top">
+        <span class="hm-tt-name">${invHint}${k.name}</span>
+        <span class="hm-tt-kpct" style="color:${kcol};">${pctTxt}</span>
+      </div>
+      <div class="hm-tt-vals">
+        <span>Real <b>${k.real}</b></span>
+        <span>Target <b>${k.target}</b></span>
+      </div>
+    </div>`;
+  }
+  const cls=sem(avgPct);
+  const bg=BGCOLS[cls],tc=TXTCOLS[cls];
+  const avgTxt=avgPct!==null&&avgPct!==undefined?Math.round(avgPct)+'%':'—';
+  let rows='';
+  if(!kpisInfo||kpisInfo.length===0){
+    rows='<div style="font-size:11px;color:#aaa;padding:6px 0;text-align:center;">Sin KPIs en este período</div>';
+  } else if(groupByPilar){
+    // Agrupar por pilar
+    const byPilar={};
+    kpisInfo.forEach(k=>{const p=k.pilar||'Sin pilar';if(!byPilar[p])byPilar[p]=[];byPilar[p].push(k);});
+    const ORD=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto','Sin pilar'];
+    rows=ORD.filter(p=>byPilar[p]).map(pilar=>{
+      const pkpis=byPilar[pilar];
+      const ppcts=pkpis.map(k=>k.pct).filter(p=>p!==null&&p!==undefined);
+      const pavg=ppcts.length>0?ppcts.reduce((a,b)=>a+b,0)/ppcts.length:null;
+      const pcls=sem(pavg);
+      const pcol=COLS[pcls];
+      const pavgTxt=pavg!==null?Math.round(pavg)+'%':'—';
+      const icon=PILAR_ICONS[pilar]||'';
+      return`<div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;background:#fafafa;border-radius:3px;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:700;color:#222;">${icon} ${pilar}</span>
+          <span style="font-size:10px;font-weight:700;color:${pcol};">${pavgTxt}</span>
+        </div>
+        ${pkpis.map(renderKpi).join('')}
+      </div>`;
+    }).join('');
+  } else {
+    rows=kpisInfo.map(renderKpi).join('');
+  }
+  return`<div class="hm-tt-hdr">
+    <div>
+      <div class="hm-tt-pilar">${title}</div>
+      <div style="font-size:10px;color:#999;margin-top:2px;letter-spacing:.3px;text-transform:uppercase;">${subtitle}</div>
+    </div>
+    ${avgPct!==null&&avgPct!==undefined?`<span class="hm-tt-pct" style="background:${bg};color:${tc};">${avgTxt}</span>`:''}
+  </div>
+  ${rows}`;
+}
+
 function buildHeatmap(emp,year){
   const empData=SC_EMPRESAS[emp];
   let yData;
@@ -1515,6 +1596,7 @@ function buildHeatmap(emp,year){
   if(meses.length===0)return'';
   function hmCls(p){return p===null?'hm-gr':p>=95?'hm-g':p>=80?'hm-y':'hm-r';}
   function hmTxt(p){return p===null?'—':Math.round(p)+'%';}
+  function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
 
   const pilarRows=SC_PILARES.map(pilar=>{
     if(pilar==='Impacto')return null;
@@ -1524,15 +1606,25 @@ function buildHeatmap(emp,year){
       const pcts=kpisP.map(([,v])=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
       const avg=pcts.length>0?pcts.reduce((a,b)=>a+b,0)/pcts.length:null;
       const cls=hmCls(avg);
-      return`<td><span class="hm-cell ${cls}">${hmTxt(avg)}</span></td>`;
+      // Detalle de KPIs para tooltip
+      const kpisInfo=kpisP.map(([k,v])=>({
+        name:k,
+        real:scFmtV(v.r,v.u),
+        target:scFmtV(v.t,v.u),
+        pct:scCalcPct(v.t,v.r,v.inv),
+        inv:!!v.inv,
+        u:v.u
+      }));
+      const ttData=JSON.stringify({title:`${SC_PILARES_ICON[pilar]} ${pilar}`,subtitle:`${m} ${year}`,avgPct:avg,kpis:kpisInfo}).replace(/'/g,"&apos;");
+      return`<td><span class="hm-cell ${cls}" data-hmtt='${ttData}'>${hmTxt(avg)}</span></td>`;
     }).join('');
     return`<tr><td class="pilar-name">${SC_PILARES_ICON[pilar]} ${pilar}</td>${cells}</tr>`;
   }).filter(Boolean).join('');
 
   const headers=meses.map(m=>`<th>${m.slice(0,3)}</th>`).join('');
 
-  return`<div class="heatmap-box">
-    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes</div>
+  return`<div class="heatmap-box" id="sc-heatmap-emp">
+    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(pasa el cursor sobre una celda para ver detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Pilar</th>${headers}</tr></thead>
       <tbody>${pilarRows}</tbody>
@@ -1747,6 +1839,7 @@ function buildScorecardGeneral(){
 
   function hmCls(p){return p===null?'hm-gr':p>=95?'hm-g':p>=80?'hm-y':'hm-r';}
   function hmTxt(p){return p===null?'—':Math.round(p)+'%';}
+  function hmFmtV(v,u,emp){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
   const heatmapRows=EMPRESAS.map(emp=>{
     const yData=SC_EMPRESAS[emp].years[scGenYear]||{};
     const cells=allMeses.map(m=>{
@@ -1754,12 +1847,31 @@ function buildScorecardGeneral(){
       if(!mesData)return`<td><span class="hm-cell hm-gr">—</span></td>`;
       const allP=Object.values(mesData).map(v=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
       const avg=allP.length>0?allP.reduce((a,b)=>a+b,0)/allP.length:null;
-      return`<td><span class="hm-cell ${hmCls(avg)}">${hmTxt(avg)}</span></td>`;
+      // Detalle de KPIs agrupados por pilar
+      const kpisInfo=Object.entries(mesData).map(([k,v])=>({
+        name:k,
+        real:hmFmtV(v.r,v.u,emp),
+        target:hmFmtV(v.t,v.u,emp),
+        pct:scCalcPct(v.t,v.r,v.inv),
+        inv:!!v.inv,
+        u:v.u,
+        pilar:v.p
+      }));
+      // Ordenar por pilar y luego por % desc
+      const PILAR_ORD={'Cliente Feliz':0,'Equipo Feliz':1,'Valor':2,'Salud':3,'Impacto':4};
+      kpisInfo.sort((a,b)=>{
+        const pa=PILAR_ORD[a.pilar]??99,pb=PILAR_ORD[b.pilar]??99;
+        if(pa!==pb)return pa-pb;
+        const pca=a.pct===null?-1:a.pct,pcb=b.pct===null?-1:b.pct;
+        return pcb-pca;
+      });
+      const ttData=JSON.stringify({title:emp,subtitle:`${m} ${scGenYear}`,avgPct:avg,kpis:kpisInfo,groupByPilar:true}).replace(/'/g,"&apos;");
+      return`<td><span class="hm-cell ${hmCls(avg)}" data-hmtt='${ttData}'>${hmTxt(avg)}</span></td>`;
     }).join('');
     return`<tr><td class="pilar-name" style="color:${EMP_COLORS[emp]};font-weight:700;">${emp}</td>${cells}</tr>`;
   }).join('');
-  const heatmapHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;">
-    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear}</div>
+  const heatmapHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;" id="sc-heatmap-gen">
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(pasa el cursor sobre una celda para ver detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Empresa</th>${allMeses.map(m=>`<th>${m.slice(0,3)}</th>`).join('')}</tr></thead>
       <tbody>${heatmapRows}</tbody>
@@ -2169,6 +2281,51 @@ function renderView(view){
           });
           c.addEventListener('mouseleave',function(){tt2.style.opacity='0';});
         });
+      });
+
+      // ── Tooltips de heatmap (cumplimiento por pilar / general) ──
+      let hmTtEl=document.getElementById('sc-hm-tooltip-global');
+      if(!hmTtEl){
+        hmTtEl=document.createElement('div');
+        hmTtEl.id='sc-hm-tooltip-global';
+        hmTtEl.className='hm-tooltip';
+        document.body.appendChild(hmTtEl);
+      }
+      document.querySelectorAll('.hm-cell[data-hmtt]').forEach(function(cell){
+        cell.addEventListener('mouseenter',function(e){
+          try{
+            const raw=cell.getAttribute('data-hmtt').replace(/&apos;/g,"'");
+            const d=JSON.parse(raw);
+            hmTtEl.innerHTML=hmBuildTooltipHTML(d.title,d.subtitle,d.avgPct,d.kpis,d.groupByPilar);
+            hmTtEl.classList.add('show');
+            // Posicionar
+            const rect=cell.getBoundingClientRect();
+            const ttRect={width:300,height:Math.min(420,hmTtEl.scrollHeight||220)};
+            let left=rect.right+8;
+            let top=rect.top-10;
+            if(left+ttRect.width>window.innerWidth-10)left=rect.left-ttRect.width-8;
+            if(left<10)left=10;
+            if(top+ttRect.height>window.innerHeight-10)top=window.innerHeight-ttRect.height-10;
+            if(top<10)top=10;
+            hmTtEl.style.left=left+'px';
+            hmTtEl.style.top=top+'px';
+          }catch(err){console.error('Heatmap tooltip error:',err);}
+        });
+        cell.addEventListener('mousemove',function(e){
+          if(!hmTtEl.classList.contains('show'))return;
+          const rect=cell.getBoundingClientRect();
+          const ttW=hmTtEl.offsetWidth||300;
+          const ttH=hmTtEl.offsetHeight||220;
+          let left=rect.right+8;
+          let top=rect.top-10;
+          if(left+ttW>window.innerWidth-10)left=rect.left-ttW-8;
+          if(left<10)left=10;
+          if(top+ttH>window.innerHeight-10)top=window.innerHeight-ttH-10;
+          if(top<10)top=10;
+          hmTtEl.style.left=left+'px';
+          hmTtEl.style.top=top+'px';
+        });
+        cell.addEventListener('mouseleave',function(){hmTtEl.classList.remove('show');});
       });
 
     },20);
