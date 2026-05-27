@@ -215,9 +215,12 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 .heatmap-table td.pilar-name{text-align:left;font-size:11px;font-weight:600;color:#333;white-space:nowrap;padding-left:0;}
 .hm-cell{display:inline-block;width:100%;min-width:36px;padding:4px 2px;border-radius:3px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;transition:transform .1s;}
 .hm-cell:hover{transform:scale(1.08);box-shadow:0 0 0 2px rgba(13,27,134,.2);}
-.hm-tooltip{position:fixed;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 4px 4px 0;padding:12px 14px;min-width:280px;max-width:340px;max-height:420px;overflow-y:auto;pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);}
-.hm-tooltip.show{opacity:1;}
-.hm-tt-hdr{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;}
+.hm-cell.active{transform:scale(1.08);box-shadow:0 0 0 2px rgba(13,27,134,.5);}
+.hm-tooltip{position:fixed;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 4px 4px 0;padding:12px 14px;min-width:300px;max-width:340px;max-height:420px;overflow-y:auto;display:none;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);pointer-events:auto;}
+.hm-tooltip.show{display:block;}
+.hm-tt-close{position:absolute;top:8px;right:10px;width:22px;height:22px;border-radius:50%;background:#f5f5f5;border:none;cursor:pointer;font-size:14px;color:#666;display:flex;align-items:center;justify-content:center;line-height:1;font-family:'Inter',sans-serif;padding:0;}
+.hm-tt-close:hover{background:#fdeef0;color:#b62e2e;}
+.hm-tt-hdr{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:10px;padding-bottom:8px;padding-right:28px;border-bottom:1px solid #f0f0f0;}
 .hm-tt-pilar{font-size:13px;font-weight:700;color:#222;}
 .hm-tt-pct{font-size:11px;font-weight:700;padding:3px 9px;border-radius:3px;}
 .hm-tt-row{padding:6px 0;border-bottom:1px solid #f5f5f5;}
@@ -1624,7 +1627,7 @@ function buildHeatmap(emp,year){
   const headers=meses.map(m=>`<th>${m.slice(0,3)}</th>`).join('');
 
   return`<div class="heatmap-box" id="sc-heatmap-emp">
-    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(pasa el cursor sobre una celda para ver detalle)</span></div>
+    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(haz clic en una celda para ver el detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Pilar</th>${headers}</tr></thead>
       <tbody>${pilarRows}</tbody>
@@ -1871,7 +1874,7 @@ function buildScorecardGeneral(){
     return`<tr><td class="pilar-name" style="color:${EMP_COLORS[emp]};font-weight:700;">${emp}</td>${cells}</tr>`;
   }).join('');
   const heatmapHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;" id="sc-heatmap-gen">
-    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(pasa el cursor sobre una celda para ver detalle)</span></div>
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(haz clic en una celda para ver el detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Empresa</th>${allMeses.map(m=>`<th>${m.slice(0,3)}</th>`).join('')}</tr></thead>
       <tbody>${heatmapRows}</tbody>
@@ -2283,7 +2286,7 @@ function renderView(view){
         });
       });
 
-      // ── Tooltips de heatmap (cumplimiento por pilar / general) ──
+      // ── Tooltips de heatmap (click-to-pin) ──
       let hmTtEl=document.getElementById('sc-hm-tooltip-global');
       if(!hmTtEl){
         hmTtEl=document.createElement('div');
@@ -2291,41 +2294,67 @@ function renderView(view){
         hmTtEl.className='hm-tooltip';
         document.body.appendChild(hmTtEl);
       }
+      function hmCloseTooltip(){
+        hmTtEl.classList.remove('show');
+        document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
+      }
+      function hmPositionTooltip(cell){
+        const rect=cell.getBoundingClientRect();
+        const ttW=hmTtEl.offsetWidth||320;
+        const ttH=hmTtEl.offsetHeight||300;
+        let left=rect.right+8;
+        let top=rect.top-10;
+        if(left+ttW>window.innerWidth-10)left=rect.left-ttW-8;
+        if(left<10)left=10;
+        if(top+ttH>window.innerHeight-10)top=window.innerHeight-ttH-10;
+        if(top<10)top=10;
+        hmTtEl.style.left=left+'px';
+        hmTtEl.style.top=top+'px';
+      }
+      // Cerrar al hacer click fuera (en el documento, no en el tooltip ni en una celda)
+      if(!window._hmOutsideClickBound){
+        document.addEventListener('click',function(e){
+          if(e.target.closest('.hm-tooltip'))return;
+          if(e.target.closest('.hm-cell[data-hmtt]'))return;
+          const tt=document.getElementById('sc-hm-tooltip-global');
+          if(tt&&tt.classList.contains('show')){
+            tt.classList.remove('show');
+            document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
+          }
+        });
+        // Cerrar con ESC
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'){
+            const tt=document.getElementById('sc-hm-tooltip-global');
+            if(tt&&tt.classList.contains('show')){
+              tt.classList.remove('show');
+              document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
+            }
+          }
+        });
+        window._hmOutsideClickBound=true;
+      }
       document.querySelectorAll('.hm-cell[data-hmtt]').forEach(function(cell){
-        cell.addEventListener('mouseenter',function(e){
+        cell.addEventListener('click',function(e){
+          e.stopPropagation();
+          const wasActive=cell.classList.contains('active');
+          // Limpiar otros activos
+          document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
+          if(wasActive){
+            // Si ya estaba abierta esta misma celda, cerrar
+            hmTtEl.classList.remove('show');
+            return;
+          }
           try{
             const raw=cell.getAttribute('data-hmtt').replace(/&apos;/g,"'");
             const d=JSON.parse(raw);
-            hmTtEl.innerHTML=hmBuildTooltipHTML(d.title,d.subtitle,d.avgPct,d.kpis,d.groupByPilar);
+            hmTtEl.innerHTML='<button class="hm-tt-close" onclick="document.getElementById(\'sc-hm-tooltip-global\').classList.remove(\'show\');document.querySelectorAll(\'.hm-cell.active\').forEach(c=>c.classList.remove(\'active\'));">×</button>'+hmBuildTooltipHTML(d.title,d.subtitle,d.avgPct,d.kpis,d.groupByPilar);
             hmTtEl.classList.add('show');
-            // Posicionar
-            const rect=cell.getBoundingClientRect();
-            const ttRect={width:300,height:Math.min(420,hmTtEl.scrollHeight||220)};
-            let left=rect.right+8;
-            let top=rect.top-10;
-            if(left+ttRect.width>window.innerWidth-10)left=rect.left-ttRect.width-8;
-            if(left<10)left=10;
-            if(top+ttRect.height>window.innerHeight-10)top=window.innerHeight-ttRect.height-10;
-            if(top<10)top=10;
-            hmTtEl.style.left=left+'px';
-            hmTtEl.style.top=top+'px';
+            cell.classList.add('active');
+            // Posicionar después de que tenga dimensiones reales
+            requestAnimationFrame(()=>hmPositionTooltip(cell));
           }catch(err){console.error('Heatmap tooltip error:',err);}
         });
-        cell.addEventListener('mousemove',function(e){
-          if(!hmTtEl.classList.contains('show'))return;
-          const rect=cell.getBoundingClientRect();
-          const ttW=hmTtEl.offsetWidth||300;
-          const ttH=hmTtEl.offsetHeight||220;
-          let left=rect.right+8;
-          let top=rect.top-10;
-          if(left+ttW>window.innerWidth-10)left=rect.left-ttW-8;
-          if(left<10)left=10;
-          if(top+ttH>window.innerHeight-10)top=window.innerHeight-ttH-10;
-          if(top<10)top=10;
-          hmTtEl.style.left=left+'px';
-          hmTtEl.style.top=top+'px';
-        });
-        cell.addEventListener('mouseleave',function(){hmTtEl.classList.remove('show');});
       });
 
     },20);
