@@ -254,6 +254,23 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 .esp-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #eef0f2;flex-wrap:wrap;}
 .esp-badge{font-size:9.5px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:.2px;}
 
+/* ── MULTI-MES SELECTOR (scorecard) ── */
+.mes-multi-wrap{position:relative;display:inline-block;}
+.mes-multi-btn{font-size:12px;padding:5px 12px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#444;cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:8px;min-width:160px;justify-content:space-between;}
+.mes-multi-btn:hover{border-color:var(--azul);}
+.mes-multi-btn.open{border-color:var(--azul);}
+.mes-multi-chev{font-size:10px;color:#999;transition:transform .15s;}
+.mes-multi-btn.open .mes-multi-chev{transform:rotate(180deg);}
+.mes-multi-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid #e0e0e0;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.1);padding:8px;min-width:220px;z-index:50;max-height:340px;overflow-y:auto;}
+.mes-multi-panel.open{display:block;}
+.mes-multi-actions{display:flex;gap:6px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid #f0f0f0;}
+.mes-multi-actions button{font-size:10px;padding:4px 8px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#666;cursor:pointer;flex:1;font-family:'Inter',sans-serif;}
+.mes-multi-actions button:hover{background:#f5f5f5;color:var(--azul);border-color:var(--azul);}
+.mes-multi-check{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:3px;cursor:pointer;font-size:12px;color:#333;}
+.mes-multi-check:hover{background:#f5f5f5;}
+.mes-multi-check input{margin:0;cursor:pointer;accent-color:var(--azul);}
+.mes-multi-check.checked{background:#eef3fd;color:var(--azul);font-weight:500;}
+
 /* ── Pend filters (compartido) ── */
 .pend-filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;background:#fff;padding:10px 14px;border-radius:4px;}
 .pend-filter-bar select{font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #e0e0e0;background:#fff;color:#333;cursor:pointer;font-family:'Inter',sans-serif;outline:none;}
@@ -1224,10 +1241,78 @@ const SC_EMPRESAS={
     }
   }}
 };
-let scEmp='QEMA',scYear=2025,scMes='all',scLoc='consolidado';
-let scGenYear=null,scGenMes='all';
-function scSetGenYear(y){scGenYear=y;scGenMes='all';renderView('scorecard');}
-function scSetGenMes(m){scGenMes=m;renderView('scorecard');}
+// scMes y scGenMes ahora son arrays: [] = todos, ['Enero','Febrero',...] = subset
+let scEmp='QEMA',scYear=2025,scMes=[],scLoc='consolidado';
+let scGenYear=null,scGenMes=[];
+
+// Helpers para multi-mes
+function scIsAllMeses(){return !scMes||scMes.length===0;}
+function scIsAllGenMeses(){return !scGenMes||scGenMes.length===0;}
+function scToggleMes(m){
+  if(!Array.isArray(scMes))scMes=[];
+  const i=scMes.indexOf(m);
+  if(i>=0)scMes.splice(i,1);else scMes.push(m);
+  renderView('scorecard');
+}
+function scToggleGenMes(m){
+  if(!Array.isArray(scGenMes))scGenMes=[];
+  const i=scGenMes.indexOf(m);
+  if(i>=0)scGenMes.splice(i,1);else scGenMes.push(m);
+  renderView('scorecard');
+}
+function scSelectAllMeses(){scMes=[];renderView('scorecard');}
+function scSelectAllGenMeses(){scGenMes=[];renderView('scorecard');}
+function scClearMeses(){scMes=[];renderView('scorecard');}
+function scClearGenMeses(){scGenMes=[];renderView('scorecard');}
+function scToggleMesPanel(id){
+  const btn=document.getElementById(id+'-btn');
+  const panel=document.getElementById(id+'-panel');
+  if(!btn||!panel)return;
+  const isOpen=panel.classList.contains('open');
+  // Cerrar todos primero
+  document.querySelectorAll('.mes-multi-panel.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.mes-multi-btn.open').forEach(b=>b.classList.remove('open'));
+  if(!isOpen){panel.classList.add('open');btn.classList.add('open');}
+}
+function scMesLabel(arr,allMeses){
+  if(!arr||arr.length===0)return`Todos los meses (${allMeses.length})`;
+  if(arr.length===1)return arr[0];
+  if(arr.length===allMeses.length)return`Todos los meses (${allMeses.length})`;
+  return`${arr.length} meses seleccionados`;
+}
+function scSetGenYear(y){scGenYear=y;scGenMes=[];renderView('scorecard');}
+
+// Cerrar paneles al hacer click fuera
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.mes-multi-wrap')){
+    document.querySelectorAll('.mes-multi-panel.open').forEach(p=>p.classList.remove('open'));
+    document.querySelectorAll('.mes-multi-btn.open').forEach(b=>b.classList.remove('open'));
+  }
+});
+
+// Construye el HTML del selector multi-mes con checkboxes
+function scBuildMesMultiSelect(id,allMeses,selectedArr,onToggleFn,onAllFn,onClearFn){
+  const label=scMesLabel(selectedArr,allMeses);
+  const items=allMeses.map(m=>{
+    const isSel=!selectedArr||selectedArr.length===0||selectedArr.includes(m);
+    return`<label class="mes-multi-check${isSel?' checked':''}">
+      <input type="checkbox" ${isSel?'checked':''} onchange="${onToggleFn}('${m}')"/>
+      <span>${m}</span>
+    </label>`;
+  }).join('');
+  return`<div class="mes-multi-wrap">
+    <button id="${id}-btn" class="mes-multi-btn" onclick="scToggleMesPanel('${id}')" type="button">
+      <span>${label}</span><span class="mes-multi-chev">▼</span>
+    </button>
+    <div id="${id}-panel" class="mes-multi-panel">
+      <div class="mes-multi-actions">
+        <button onclick="${onAllFn}()" type="button">Todos</button>
+        <button onclick="${onClearFn}()" type="button">Ninguno</button>
+      </div>
+      ${items}
+    </div>
+  </div>`;
+}
 
 function scCalcPct(t,r,inv){if(t===null||r===null||t===undefined||r===undefined)return null;if(inv&&r===0)return 100;if(inv&&t===0&&r>0)return 0;if(t===0)return r===0?100:null;return inv?(t/r)*100:(r/t)*100;}
 function scSemCls(p){return p===null?'gr':p>=95?'g':p>=80?'y':'r';}
@@ -1282,6 +1367,12 @@ function scGetMeses(y){
   }
   return SC_MESES_ORD.filter(m=>emp.years[y]?.[m]);
 }
+// Devuelve los meses efectivamente filtrados (intersección entre disponibles y seleccionados)
+function scGetMesesActivos(y){
+  const disponibles=scGetMeses(y);
+  if(scIsAllMeses())return disponibles;
+  return disponibles.filter(m=>scMes.includes(m));
+}
 function scGetAgg(){
   if(scEmp==='GENERAL')return{};
   const emp=SC_EMPRESAS[scEmp];
@@ -1291,22 +1382,31 @@ function scGetAgg(){
   } else {
     yData=emp.years[scYear]||{};
   }
-  const meses=scMes==='all'?scGetMeses(scYear):[scMes].filter(m=>yData[m]);
+  const meses=scGetMesesActivos(scYear);
   const map={};
   for(const m of meses){
     for(const[k,v]of Object.entries(yData[m]||{})){
-      if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],lastT:null,lastR:null,prevR:null};
+      if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],reals:[],targets:[],lastT:null,lastR:null,prevR:null};
       const p=scCalcPct(v.t,v.r,v.inv);
       if(p!==null){
         if(map[k].lastR!==null)map[k].prevR=map[k].lastR;
-        map[k].pcts.push(p);map[k].lastT=v.t;map[k].lastR=v.r;
+        map[k].pcts.push(p);
+        if(v.r!==null&&v.r!==undefined)map[k].reals.push(v.r);
+        if(v.t!==null&&v.t!==undefined)map[k].targets.push(v.t);
+        map[k].lastT=v.t;map[k].lastR=v.r;
       } else if(v.t!==null&&v.t!==undefined)map[k].lastT=v.t;
     }
   }
+  // Reglas de agregación:
+  //  - pct: siempre promedio de cumplimientos mensuales
+  //  - Real/Target agregado para mostrar en cards: si u==='money' Y NO invertido → suma | resto → promedio
   const res={};
   for(const[k,v]of Object.entries(map)){
     const avg=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
-    res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR};
+    const useSum=(v.u==='money'&&!v.inv);
+    const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
+    const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
+    res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
   }
   return res;
 }
@@ -1327,7 +1427,12 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
 
   window._radarTooltipData=JSON.parse(JSON.stringify(pilarData.map(d=>({
     pilar:d.pilar,pct:d.pct,cls:d.cls,
-    kpis:d.kpis.sort((a,b)=>{const pa=a[1].pct===null?-1:a[1].pct;const pb=b[1].pct===null?-1:b[1].pct;return pb-pa;}).map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))
+    kpis:d.kpis.sort((a,b)=>{const pa=a[1].pct===null?-1:a[1].pct;const pb=b[1].pct===null?-1:b[1].pct;return pb-pa;}).map(([k,v])=>{
+      const useAgg=v.aggR!==undefined&&v.aggR!==null;
+      const realV=useAgg?v.aggR:v.lastR;
+      const targetV=useAgg?v.aggT:v.lastT;
+      return{name:k,pct:v.pct,real:scFmtV(realV,v.u),target:scFmtV(targetV,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
+    })
   }))));
 
   const cx=175,cy=165,R=130;
@@ -1461,37 +1566,44 @@ function buildScorecardGeneral(){
   function getEmpAgg(emp){
     const empData=SC_EMPRESAS[emp];
     const yData=empData.years[scGenYear]||{};
-    const meses=scGenMes==='all'?SC_MESES_ORD.filter(m=>yData[m]):[scGenMes].filter(m=>yData[m]);
+    const mesesDisp=SC_MESES_ORD.filter(m=>yData[m]);
+    const meses=scIsAllGenMeses()?mesesDisp:mesesDisp.filter(m=>scGenMes.includes(m));
     const map={};
     for(const m of meses){
       for(const[k,v]of Object.entries(yData[m]||{})){
-        if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],lastT:null,lastR:null,prevR:null};
+        if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],reals:[],targets:[],lastT:null,lastR:null,prevR:null};
         const p=scCalcPct(v.t,v.r,v.inv);
-        if(p!==null){if(map[k].lastR!==null)map[k].prevR=map[k].lastR;map[k].pcts.push(p);map[k].lastT=v.t;map[k].lastR=v.r;}
+        if(p!==null){
+          if(map[k].lastR!==null)map[k].prevR=map[k].lastR;
+          map[k].pcts.push(p);
+          if(v.r!==null&&v.r!==undefined)map[k].reals.push(v.r);
+          if(v.t!==null&&v.t!==undefined)map[k].targets.push(v.t);
+          map[k].lastT=v.t;map[k].lastR=v.r;
+        }
         else if(v.t!==null&&v.t!==undefined)map[k].lastT=v.t;
       }
     }
     const res={};
     for(const[k,v]of Object.entries(map)){
       const avg=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
-      res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR};
+      const useSum=(v.u==='money'&&!v.inv);
+      const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
+      const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
+      res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
     }
     return{agg:res,year:scGenYear,meses,yData};
   }
 
   const empData=EMPRESAS.map(emp=>({emp,...getEmpAgg(emp)}));
 
-  const periodo=scGenMes==='all'?(allMeses.length>0?`${allMeses[0].slice(0,3)}–${allMeses[allMeses.length-1].slice(0,3)} ${scGenYear}`:String(scGenYear)):`${scGenMes} ${scGenYear}`;
+  const periodo=scIsAllGenMeses()?(allMeses.length>0?`${allMeses[0].slice(0,3)}–${allMeses[allMeses.length-1].slice(0,3)} ${scGenYear}`:String(scGenYear)):(scGenMes.length===1?`${scGenMes[0]} ${scGenYear}`:`${scGenMes.length} meses · ${scGenYear}`);
   setBanner('Holding La Rama — Scorecard General',periodo);
   const filtrosHtml=`<div class="sc-filter-bar">
     <span class="sc-filter-label">Año</span>
     <div style="display:flex;gap:4px;">${allYears.map(y=>`<div class="sc-filter-btn${y===scGenYear?' active':''}" onclick="scSetGenYear(${y})">${y}</div>`).join('')}</div>
     <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
-    <span class="sc-filter-label">Mes</span>
-    <select class="sc-filter-select" onchange="scSetGenMes(this.value)">
-      <option value="all"${scGenMes==='all'?' selected':''}>Todos</option>
-      ${allMeses.map(m=>`<option value="${m}"${scGenMes===m?' selected':''}>${m}</option>`).join('')}
-    </select>
+    <span class="sc-filter-label">Meses</span>
+    ${scBuildMesMultiSelect('sc-gen-mes-multi',allMeses,scGenMes,'scToggleGenMes','scSelectAllGenMeses','scClearGenMeses')}
     <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
     <div class="sc-period-badge">${periodo}</div>
   </div>`;
@@ -1536,7 +1648,12 @@ function buildScorecardGeneral(){
         pctLabels+=`<text x="${px2}" y="${py2}" text-anchor="middle" dominant-baseline="middle" fill="${col}" font-size="9" font-weight="700" font-family="Inter,sans-serif">${Math.round(d.pct)}%</text>`;
       }
     });
-    const ttData=JSON.stringify(pilarData.map(d=>({pilar:d.pilar,pct:d.pct,cls:d.cls,kpis:d.kpis.map(([k,v])=>({name:k,pct:v.pct,real:scFmtV(v.lastR,v.u),target:scFmtV(v.lastT,v.u),cls:sem(v.pct)}))})));
+    const ttData=JSON.stringify(pilarData.map(d=>({pilar:d.pilar,pct:d.pct,cls:d.cls,kpis:d.kpis.map(([k,v])=>{
+      const useAgg=v.aggR!==undefined&&v.aggR!==null;
+      const realV=useAgg?v.aggR:v.lastR;
+      const targetV=useAgg?v.aggT:v.lastT;
+      return{name:k,pct:v.pct,real:scFmtV(realV,v.u),target:scFmtV(targetV,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
+    })})));
     return`<div style="background:#fff;border-radius:3px;padding:14px;border-top:3px solid ${empCol};" data-emp="${emp}" data-tooltip='${ttData.replace(/'/g,"&apos;")}'>
       <div style="font-size:11px;font-weight:700;color:${empCol};margin-bottom:10px;">${EMP_LABELS[emp]}</div>
       <div style="position:relative;display:flex;justify-content:center;">
@@ -1545,7 +1662,7 @@ function buildScorecardGeneral(){
           <path d="${polyD}" fill="${empCol}22" stroke="${empCol}" stroke-width="1.8"/>
           ${circles}${labels}${pctLabels}
         </svg>
-        <div id="${ttId}" class="radar-tooltip" style="min-width:180px;"></div>
+        <div id="${ttId}" class="radar-tooltip" style="min-width:220px;"></div>
       </div>
     </div>`;
   }).join('');
@@ -1660,21 +1777,6 @@ function buildScorecardGeneral(){
 
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;">${radares}</div>
 
-    <div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:12px;align-items:stretch;">
-      <div class="sc-summary" style="margin-bottom:0;">
-        <div class="sc-scard dark"><div class="sc-scard-lbl">KPIs totales</div><div class="sc-scard-val dark">${totalAll}</div><div class="sc-scard-desc">todas las empresas</div></div>
-        <div class="sc-scard green"><div class="sc-scard-lbl">Cumplidos ≥95%</div><div class="sc-scard-val green">${verdeAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(verdeAll/totalAll*100):0}% del total</div></div>
-        <div class="sc-scard yellow"><div class="sc-scard-lbl">En riesgo 80–94%</div><div class="sc-scard-val yellow">${amarilloAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(amarilloAll/totalAll*100):0}% del total</div></div>
-        <div class="sc-scard red"><div class="sc-scard-lbl">Incumplidos &lt;80%</div><div class="sc-scard-val red">${rojoAll}</div><div class="sc-scard-desc">${totalAll>0?Math.round(rojoAll/totalAll*100):0}% del total</div></div>
-      </div>
-      <div style="background:#fff;border-radius:3px;padding:14px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:160px;border-top:3px solid ${gaugeColAll};">
-        <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Cumplimiento</div>
-        <canvas id="sc-gauge" width="130" height="80"></canvas>
-        <div style="font-size:28px;font-weight:700;color:${gaugeColAll};margin-top:4px;">${pctAll}%</div>
-        <div style="font-size:11px;color:#aaa;margin-top:2px;">del holding</div>
-      </div>
-    </div>
-
     ${tablaHtml}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
@@ -1707,9 +1809,8 @@ function buildScorecard(){
   }
 
   const emp=SC_EMPRESAS[scEmp];
-  const meses=scGetMeses(scYear);
-  const isSingle=scMes!=='all';
-  const periodo=isSingle?`${scMes} ${scYear}`:(meses.length>0?`${meses[0].slice(0,3)}–${meses[meses.length-1].slice(0,3)} ${scYear}`:String(scYear));
+  const mesesDispEmp=scGetMeses(scYear);
+  const periodo=scIsAllMeses()?(mesesDispEmp.length>0?`${mesesDispEmp[0].slice(0,3)}–${mesesDispEmp[mesesDispEmp.length-1].slice(0,3)} ${scYear}`:String(scYear)):(scMes.length===1?`${scMes[0]} ${scYear}`:`${scMes.length} meses · ${scYear}`);
   const locLabel=scEmp==='QEMA'&&scLoc!=='consolidado'?` — ${SC_EMPRESAS.QEMA.locaciones[scLoc]}`:'';
   setBanner(`${emp.label}${locLabel} — Scorecard`,periodo);
 
@@ -1736,8 +1837,8 @@ function buildScorecard(){
       <span class="sc-filter-label">Año</span>
       <div style="display:flex;gap:4px;" id="sc-year-btns"></div>
       <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
-      <span class="sc-filter-label">Mes</span>
-      <select class="sc-filter-select" id="sc-mes-sel" onchange="scSetMes(this.value)"><option value="all">Todos</option></select>
+      <span class="sc-filter-label">Meses</span>
+      ${scBuildMesMultiSelect('sc-mes-multi',mesesDispEmp,scMes,'scToggleMes','scSelectAllMeses','scClearMeses')}
       <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
       <div class="sc-period-badge">${periodo}</div>
     </div>
@@ -1770,22 +1871,6 @@ function buildScorecard(){
   </div>`;
 
   const pctCumplimiento=total>0?Math.round(verde/total*100):0;
-  const gaugeCol=pctCumplimiento>=95?'#22a869':pctCumplimiento>=80?'#f5a623':'#b62e2e';
-
-  html+=`<div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:12px;align-items:stretch;">
-    <div class="sc-summary" style="margin-bottom:0;">
-      <div class="sc-scard dark"><div class="sc-scard-lbl">KPIs con datos</div><div class="sc-scard-val dark">${total}</div><div class="sc-scard-desc">${isSingle?scMes:'promedio del período'}</div></div>
-      <div class="sc-scard green"><div class="sc-scard-lbl">Cumplidos ≥95%</div><div class="sc-scard-val green">${verde}</div><div class="sc-scard-desc">${total>0?Math.round(verde/total*100):0}% del total</div></div>
-      <div class="sc-scard yellow"><div class="sc-scard-lbl">En riesgo 80–94%</div><div class="sc-scard-val yellow">${amarillo}</div><div class="sc-scard-desc">${total>0?Math.round(amarillo/total*100):0}% del total</div></div>
-      <div class="sc-scard red"><div class="sc-scard-lbl">Incumplidos &lt;80%</div><div class="sc-scard-val red">${rojo}</div><div class="sc-scard-desc">${total>0?Math.round(rojo/total*100):0}% del total</div></div>
-    </div>
-    <div style="background:#fff;border-radius:3px;padding:14px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:160px;border-top:3px solid ${gaugeCol};">
-      <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Cumplimiento</div>
-      <canvas id="sc-gauge" width="130" height="80"></canvas>
-      <div style="font-size:28px;font-weight:700;color:${gaugeCol};margin-top:4px;">${pctCumplimiento}%</div>
-      <div style="font-size:11px;color:#aaa;margin-top:2px;">de KPIs cumplidos</div>
-    </div>
-  </div>`;
 
   html+=buildHeatmap(scEmp,scYear);
 
@@ -1814,8 +1899,14 @@ function buildScorecard(){
       const kpiRows=kpisP.map(([k,v])=>{
         const sc=scSemCls(v.pct);
         const w=v.pct===null?0:Math.min(100,Math.round(v.pct));
-        const delta=isSingle?scFmtDelta(v.lastT,v.lastR,v.u,v.inv,scEmp):'';
-        const trend=scFmtTrend(v.lastR,v.prevR,v.inv);
+        // Si hay múltiples meses, mostrar el valor agregado (suma para money, promedio para resto)
+        const showAgg=v.nMeses>1&&v.aggR!==null&&v.aggR!==undefined;
+        const displayR=showAgg?v.aggR:v.lastR;
+        const displayT=showAgg?v.aggT:v.lastT;
+        const isSingle=v.nMeses===1;
+        const delta=isSingle?scFmtDelta(displayT,displayR,v.u,v.inv,scEmp):'';
+        const trend=isSingle?scFmtTrend(v.lastR,v.prevR,v.inv):'';
+        const aggBadge=showAgg?`<span style="font-size:9px;color:#888;font-weight:500;margin-left:5px;background:#f0f0f0;padding:2px 6px;border-radius:3px;">${v.aggMode==='sum'?'Σ':'⌀'} ${v.nMeses} m</span>`:'';
         const cid='evo-'+k.replace(/[^a-z0-9]/gi,'_')+'-'+scEmp+'-'+scLoc+'-'+scYear;
         const realData=mesesAll.map(m=>yDataAll[m]?.[k]?.r??null);
         const targetData=mesesAll.map(m=>yDataAll[m]?.[k]?.t??null);
@@ -1825,9 +1916,9 @@ function buildScorecard(){
         const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
         const lineColor=scEmp==='QEMA'?'#69231e':scEmp==='INLOG'?'#0d1b86':scEmp==='ARDE'?'#000000':scEmp==='SHARF'?'#ff6568':'#74579D';
         const cardHtml=`<div class="sc-kcell ${sc}" style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">
-          <div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}</div><div class="sem ${sc}"></div></div>
-          <div class="sc-kcell-real ${sc}">${scFmtVal(v.lastR,v.u,scEmp)}${delta}${trend}</div>
-          <div class="sc-kcell-vs">Target: <b>${scFmtVal(v.lastT,v.u,scEmp)}</b></div>
+          <div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}${aggBadge}</div><div class="sem ${sc}"></div></div>
+          <div class="sc-kcell-real ${sc}">${scFmtVal(displayR,v.u,scEmp)}${delta}${trend}</div>
+          <div class="sc-kcell-vs">Target: <b>${scFmtVal(displayT,v.u,scEmp)}</b></div>
           <div class="sc-kcell-bar"><div class="sc-kcell-fill ${sc}" style="width:${w}%"></div></div>
           ${v.inv?'<div class="sc-kcell-note">↓ Más bajo = mejor</div>':''}
         </div>`;
@@ -1862,20 +1953,14 @@ function scBuildYearBtns(){
   const cont=document.getElementById('sc-year-btns');if(!cont)return;
   cont.innerHTML=ys.map(y=>`<div class="sc-filter-btn${y===scYear?' active':''}" onclick="scSetYear(${y},this)">${y}</div>`).join('');
 }
-function scBuildMesSel(){
-  const meses=scGetMeses(scYear);const sel=document.getElementById('sc-mes-sel');if(!sel)return;
-  sel.innerHTML='<option value="all">Todos</option>'+meses.map(m=>`<option value="${m}">${m}</option>`).join('');
-  sel.value=scMes==='all'?'all':scMes;
-}
-function scSetEmp(e){scEmp=e;scMes='all';scLoc='consolidado';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
-function scSetLoc(l){scLoc=l;scMes='all';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
+function scSetEmp(e){scEmp=e;scMes=[];scLoc='consolidado';const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
+function scSetLoc(l){scLoc=l;scMes=[];const ys=scGetYears();scYear=ys[ys.length-1];renderView('scorecard');}
 function scSetYear(y,el){
-  scYear=y;scMes='all';
+  scYear=y;scMes=[];
   document.querySelectorAll('#sc-year-btns .sc-filter-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  scBuildMesSel();renderView('scorecard');
+  renderView('scorecard');
 }
-function scSetMes(v){scMes=v;renderView('scorecard');}
 
 async function generarConclusionesGeneral(){
   const btn=document.getElementById('btn-conclusiones');
@@ -1957,19 +2042,6 @@ function renderView(view){
   if(view==='scorecard'){
     setTimeout(()=>{
       scBuildYearBtns();
-      scBuildMesSel();
-      const canvas=document.getElementById('sc-gauge');
-      if(canvas){
-        const ctx=canvas.getContext('2d');
-        const cx=65,cy=72,r=52,lw=10;
-        const pctEl=canvas.parentElement.querySelector('div[style*="font-size:28px"]');
-        const pct=pctEl?parseInt(pctEl.textContent)/100:0;
-        const col=pct>=0.95?'#22a869':pct>=0.80?'#f5a623':'#b62e2e';
-        ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,Math.PI*2);
-        ctx.strokeStyle='#f0f0f0';ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
-        ctx.beginPath();ctx.arc(cx,cy,r,Math.PI,Math.PI+Math.PI*pct);
-        ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
-      }
       document.querySelectorAll('canvas.evo-chart').forEach(function(canvas){
         if(canvas._chart){canvas._chart.destroy();}
         const labels=JSON.parse(canvas.getAttribute('data-labels')||'[]');
@@ -2007,18 +2079,17 @@ function renderView(view){
             } else {
               rows=d.kpis.map(function(k){
                 const kcol=COLS_TT[k.cls];
-                const w=k.pct===null?0:Math.min(100,Math.round(k.pct));
                 const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';
-                return`<div style="display:flex;align-items:flex-start;gap:7px;padding:4px 0;">
-                  <div style="width:7px;height:7px;border-radius:2px;background:${kcol};flex-shrink:0;margin-top:3px;"></div>
-                  <div style="flex:1;min-width:0;">
-                    <div style="display:flex;justify-content:space-between;gap:4px;">
-                      <span style="font-size:11px;color:#555;">${k.name}</span>
-                      <span style="font-size:11px;font-weight:700;color:${kcol};white-space:nowrap;">${pctTxt}</span>
-                    </div>
-                    <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:3px;overflow:hidden;">
-                      <div style="height:100%;width:${w}%;background:${kcol};border-radius:2px;"></div>
-                    </div>
+                const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${k.aggMode==='sum'?'Σ':'⌀'} ${k.nMeses}m)</span>`:'';
+                const invHint=k.inv?`<span style="font-size:9px;color:#999;" title="Menos es mejor">↓</span>`:'';
+                return`<div style="padding:5px 0;border-bottom:1px solid #f5f5f5;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px;">
+                    <span style="font-size:11px;color:#333;font-weight:500;">${invHint}${k.name}${aggHint}</span>
+                    <span style="font-size:11px;font-weight:700;color:${kcol};white-space:nowrap;">${pctTxt}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;gap:6px;font-size:10px;color:#888;">
+                    <span>Real <b style="color:#222;">${k.real}</b></span>
+                    <span>Target <b style="color:#222;">${k.target}</b></span>
                   </div>
                 </div>`;
               }).join('');
@@ -2038,7 +2109,7 @@ function renderView(view){
             const cy2=parseFloat(c.getAttribute('cy'))*scaleX+(svgRect.top-wrap.top);
             let left=cx2+16;
             let top=cy2-30;
-            if(left+250>wrap.width)left=cx2-260;
+            if(left+260>wrap.width)left=cx2-270;
             if(top<0)top=4;
             tt.style.left=left+'px';
             tt.style.top=top+'px';
@@ -2069,7 +2140,22 @@ function renderView(view){
             const bg=BGCOLS2[d.cls],tc=TXTCOLS2[d.cls];
             let rows='';
             if(d.pilar==='Impacto'||d.kpis.length===0){rows='<div style="font-size:11px;color:#aaa;padding:4px 0;">Sin KPIs asignados</div>';}
-            else{rows=d.kpis.map(function(k){const kcol=COLS2[k.cls];const w=k.pct===null?0:Math.min(100,Math.round(k.pct));const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';return`<div style="display:flex;align-items:flex-start;gap:6px;padding:3px 0;"><div style="width:6px;height:6px;border-radius:2px;background:${kcol};flex-shrink:0;margin-top:3px;"></div><div style="flex:1;min-width:0;"><div style="display:flex;justify-content:space-between;gap:4px;"><span style="font-size:11px;color:#555;">${k.name}</span><span style="font-size:11px;font-weight:700;color:${kcol};">${pctTxt}</span></div><div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:2px;overflow:hidden;"><div style="height:100%;width:${w}%;background:${kcol};border-radius:2px;"></div></div></div></div>`;}).join('');}
+            else{rows=d.kpis.map(function(k){
+              const kcol=COLS2[k.cls];
+              const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';
+              const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${k.aggMode==='sum'?'Σ':'⌀'} ${k.nMeses}m)</span>`:'';
+              const invHint=k.inv?`<span style="font-size:9px;color:#999;" title="Menos es mejor">↓</span>`:'';
+              return`<div style="padding:5px 0;border-bottom:1px solid #f5f5f5;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px;">
+                  <span style="font-size:11px;color:#333;font-weight:500;">${invHint}${k.name}${aggHint}</span>
+                  <span style="font-size:11px;font-weight:700;color:${kcol};white-space:nowrap;">${pctTxt}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:6px;font-size:10px;color:#888;">
+                  <span>Real <b style="color:#222;">${k.real}</b></span>
+                  <span>Target <b style="color:#222;">${k.target}</b></span>
+                </div>
+              </div>`;
+            }).join('');}
             tt2.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;"><div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div><span style="font-size:12px;font-weight:600;color:#222;">${d.pilar}</span>${d.pct!==null?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:${bg};color:${tc};margin-left:auto;">${Math.round(d.pct)}%</span>`:''}</div>${rows}`;
             tt2.style.opacity='1';
             const svgRect2=svgEl2.getBoundingClientRect();
@@ -2078,7 +2164,7 @@ function renderView(view){
             const cx3=parseFloat(c.getAttribute('cx'))*scaleX2+(svgRect2.left-wrap2.left);
             const cy3=parseFloat(c.getAttribute('cy'))*scaleX2+(svgRect2.top-wrap2.top);
             let left2=cx3+14;let top2=cy3-25;
-            if(left2+200>wrap2.width)left2=cx3-210;if(top2<0)top2=4;
+            if(left2+230>wrap2.width)left2=cx3-240;if(top2<0)top2=4;
             tt2.style.left=left2+'px';tt2.style.top=top2+'px';
           });
           c.addEventListener('mouseleave',function(){tt2.style.opacity='0';});
