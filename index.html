@@ -1353,6 +1353,11 @@ const SC_EMPRESAS={
   }}
 };
 // scMes y scGenMes ahora son arrays: [] = todos, ['Enero','Febrero',...] = subset
+
+// ── P&L por empresa (solo INLOG por ahora; mensual Ene-Abr + YTD) ──
+const PL_DATA = {
+  INLOG: {"periodo":"Ene–Abr","anio":2026,"meses":["Ene","Feb","Mar","Abr"],"rows":[{"n":"INGRESOS","l":"h","m":[{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null}],"y":{"p":null,"r":null}},{"n":"Pregrado","l":"s","m":[{"p":12266.56,"r":31684.5},{"p":3066.64,"r":2880.5},{"p":97628.06,"r":57774.0},{"p":113276.7,"r":73794.25}],"y":{"p":226237.96,"r":166133.25}},{"n":"PG Atrasados","l":"s","m":[{"p":null,"r":31684.5},{"p":null,"r":2880.5},{"p":null,"r":3998.5},{"p":null,"r":47258.5}],"y":{"p":null,"r":85822.0}},{"n":"PG Mes","l":"s","m":[{"p":null,"r":0.0},{"p":null,"r":0.0},{"p":null,"r":53775.5},{"p":null,"r":26535.75}],"y":{"p":null,"r":80311.25}},{"n":"Educación Continua","l":"s","m":[{"p":6887.78,"r":4967.5},{"p":14917.17,"r":27151.28},{"p":15283.38,"r":30029.9},{"p":25914.46,"r":19024.8}],"y":{"p":63002.78,"r":81173.48}},{"n":"Inhouse","l":"s","m":[{"p":0.0,"r":12656.0},{"p":13750.0,"r":4200.0},{"p":30000.0,"r":0.0},{"p":40000.0,"r":0.0}],"y":{"p":83750.0,"r":16856.0}},{"n":"Otros (derechos, titulaciones)","l":"s","m":[{"p":0.0,"r":6480.0},{"p":0.0,"r":3070.0},{"p":1462.94,"r":14515.0},{"p":1462.94,"r":10235.0}],"y":{"p":2925.89,"r":34300.0}},{"n":"TOTAL VENTAS","l":"t","m":[{"p":19154.34,"r":55788.0},{"p":31733.81,"r":37301.78},{"p":144374.38,"r":102318.9},{"p":180654.1,"r":103054.05}],"y":{"p":375916.63,"r":298462.73}},{"n":"COSTO DE VENTAS","l":"h","m":[{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null}],"y":{"p":null,"r":null}},{"n":"Educación Contínua","l":"s","m":[{"p":630.0,"r":1110.0},{"p":5760.0,"r":1260.0},{"p":5760.0,"r":3960.0},{"p":7020.0,"r":6075.0}],"y":{"p":19170.0,"r":12405.0}},{"n":"Inhouse","l":"s","m":[{"p":0.0,"r":420.0},{"p":1120.0,"r":800.0},{"p":1050.0,"r":2120.0},{"p":1400.0,"r":425.0}],"y":{"p":3570.0,"r":3765.0}},{"n":"Otros (libros, derechos, titulaciones)","l":"s","m":[{"p":0.0,"r":0.0},{"p":0.0,"r":0.0},{"p":1629.89,"r":177.2},{"p":3519.89,"r":2383.68}],"y":{"p":5149.77,"r":2560.88}},{"n":"Planilla Docentes-Pregrado","l":"s","m":[{"p":2160.0,"r":1620.0},{"p":3810.0,"r":3270.0},{"p":864.0,"r":855.0},{"p":25315.88,"r":23546.99}],"y":{"p":32149.88,"r":29291.99}},{"n":"TOTAL COSTO DE VENTAS","l":"t","m":[{"p":2790.0,"r":3150.0},{"p":10690.0,"r":5330.0},{"p":9303.89,"r":7112.2},{"p":37255.77,"r":32430.67}],"y":{"p":60039.66,"r":48022.87}},{"n":"UTILIDAD BRUTA POR LÍNEA DE NEGOCIO","l":"h","m":[{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null}],"y":{"p":null,"r":null}},{"n":"Pregrado","l":"s","m":[{"p":10106.56,"r":30064.5},{"p":-743.36,"r":-389.5},{"p":96764.06,"r":56919.0},{"p":87960.81,"r":50247.26}],"y":{"p":194088.08,"r":136841.26}},{"n":"Educación Continua","l":"s","m":[{"p":6257.78,"r":3857.5},{"p":9157.17,"r":25891.28},{"p":9523.38,"r":26069.9},{"p":18894.46,"r":12949.8}],"y":{"p":43832.78,"r":68768.48}},{"n":"Inhouse","l":"s","m":[{"p":0.0,"r":12236.0},{"p":12630.0,"r":3400.0},{"p":28950.0,"r":-2120.0},{"p":38600.0,"r":-425.0}],"y":{"p":80180.0,"r":13091.0}},{"n":"Otros","l":"s","m":[{"p":0.0,"r":6480.0},{"p":0.0,"r":3070.0},{"p":-166.94,"r":14337.8},{"p":-2056.94,"r":7851.32}],"y":{"p":-2223.89,"r":31739.12}},{"n":"UTILIDAD BRUTA","l":"t","m":[{"p":16364.34,"r":52638.0},{"p":21043.81,"r":31971.78},{"p":135070.5,"r":95206.7},{"p":143398.33,"r":70623.38}],"y":{"p":315876.97,"r":250439.86}},{"n":"GASTOS ADMINISTRATIVOS","l":"h","m":[{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null}],"y":{"p":null,"r":null}},{"n":"Planilla","l":"s","m":[{"p":97444.17,"r":97905.23},{"p":97444.17,"r":95475.02},{"p":100357.88,"r":95475.02},{"p":100357.88,"r":95475.02}],"y":{"p":395604.11,"r":384330.28}},{"n":"TI","l":"s","m":[{"p":18666.34,"r":15596.8},{"p":23119.34,"r":17868.05},{"p":17005.8,"r":14903.57},{"p":17895.8,"r":16764.59}],"y":{"p":76687.28,"r":65133.01}},{"n":"Otros GA","l":"s","m":[{"p":11376.32,"r":9937.03},{"p":10225.82,"r":10090.87},{"p":10225.82,"r":11227.9},{"p":17873.42,"r":12247.27}],"y":{"p":49701.39,"r":43503.07}},{"n":"TOTAL GASTOS ADMINISTRATIVOS","l":"t","m":[{"p":127486.83,"r":123439.05},{"p":130789.33,"r":123433.94},{"p":127589.5,"r":121606.49},{"p":136127.1,"r":124486.88}],"y":{"p":521992.78,"r":492966.36}},{"n":"GASTOS DE VENTAS","l":"h","m":[{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null},{"p":null,"r":null}],"y":{"p":null,"r":null}},{"n":"Publicidad y Marketing - Pregrado","l":"s","m":[{"p":95325.02,"r":76916.96},{"p":122927.2,"r":113982.03},{"p":92917.2,"r":120869.29},{"p":50591.6,"r":91398.51}],"y":{"p":361761.02,"r":403166.79}},{"n":"Planilla","l":"s","m":[{"p":49761.19,"r":42159.43},{"p":49761.19,"r":43937.23},{"p":49761.19,"r":46644.85},{"p":49761.19,"r":47221.88}],"y":{"p":199044.74,"r":179963.39}},{"n":"Otros GV","l":"s","m":[{"p":58905.0,"r":6500.0},{"p":6500.0,"r":6905.4},{"p":6500.0,"r":7395.0},{"p":6500.0,"r":17457.8}],"y":{"p":78405.0,"r":38258.2}},{"n":"Publicidad y Marketing - Ed. Continua","l":"s","m":[{"p":3650.0,"r":3035.01},{"p":9000.0,"r":4075.59},{"p":4100.0,"r":8109.54},{"p":13100.0,"r":13581.06}],"y":{"p":29850.0,"r":28801.2}},{"n":"TOTAL GASTOS VENTAS","l":"t","m":[{"p":207641.2,"r":128611.4},{"p":188188.39,"r":168900.25},{"p":153278.39,"r":183018.68},{"p":119952.79,"r":169659.25}],"y":{"p":669060.76,"r":650189.58}},{"n":"GASTOS IMPLEMENTACIÓN NUEVO LOCAL","l":"s","m":[{"p":0.0,"r":null},{"p":0.0,"r":null},{"p":10340.0,"r":null},{"p":21340.2,"r":null}],"y":{"p":31680.2,"r":null}},{"n":"DÉFICIT OPERATIVO","l":"t","m":[{"p":-318763.7,"r":-199412.45},{"p":-297933.91,"r":-260362.41},{"p":-145797.39,"r":-209418.47},{"p":-112681.56,"r":-223522.74}],"y":{"p":-875176.57,"r":-892716.07}},{"n":"DÉFICIT NETO","l":"t","m":[{"p":-318763.7,"r":-199412.45},{"p":-297933.91,"r":-260362.41},{"p":-145797.39,"r":-209418.47},{"p":-112681.56,"r":-223522.74}],"y":{"p":-875176.57,"r":-892716.07}}]}
+};
 let scEmp='QEMA',scYear=2025,scMes=[],scLoc='consolidado';
 let scGenYear=null,scGenMes=[];
 
@@ -2026,6 +2031,83 @@ function buildScorecardGeneral(){
     ${heatmapHtml}`;
 }
 
+// ── P&L: tabla Presupuesto vs Real (YTD) ──
+function plFmtMoney(v){
+  if(v===null||v===undefined)return'—';
+  const a=Math.abs(v);const neg=v<0;
+  let s;
+  if(a>=1000000)s='S/'+scNum(a/1000000,2)+'M';
+  else if(a>=1000)s='S/'+scNum(a/1000,1)+'K';
+  else s='S/'+scNum(a,0);
+  return neg?`(${s})`:s;
+}
+function buildPL(emp){
+  const pl=PL_DATA[emp];
+  if(!pl)return''; // empresa sin P&L cargado
+  const meses=pl.meses||['Ene','Feb','Mar','Abr'];
+  const nCols=1+meses.length*2+2; // concepto + (P,R por mes) + (YTD P,R)
+
+  const rows=pl.rows.map(row=>{
+    const isHeader=row.l==='h';
+    const isTotal=row.l==='t';
+    if(isHeader){
+      return`<tr><td colspan="${nCols}" style="padding:12px 10px 5px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#0d1b86;font-weight:700;border-bottom:2px solid #eef0f5;">${row.n}</td></tr>`;
+    }
+    const nameStyle=isTotal?'font-size:11.5px;font-weight:700;color:#222;':'font-size:11.5px;color:#555;padding-left:16px;';
+    const valStyle=isTotal?'font-size:11px;font-weight:700;color:#222;':'font-size:11px;color:#444;';
+    const rowBg=isTotal?'background:#f7f8fa;':'';
+    const tb=isTotal?'border-top:1px solid #e0e3e8;':'';
+    // celdas mensuales
+    let cells='';
+    row.m.forEach((mm,i)=>{
+      const sep=i>0?'border-left:1px solid #f3f4f6;':'';
+      cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;${sep}">${plFmtMoney(mm.p)}</td>`;
+      cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;">${plFmtMoney(mm.r)}</td>`;
+    });
+    // YTD destacado
+    cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;border-left:2px solid #c5d8f8;background:${isTotal?'#eef3fd':'#f7faff'};">${plFmtMoney(row.y.p)}</td>`;
+    cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;background:${isTotal?'#eef3fd':'#f7faff'};">${plFmtMoney(row.y.r)}</td>`;
+    return`<tr style="${rowBg}">
+      <td style="padding:6px 10px;${nameStyle}${tb}border-bottom:1px solid #f3f4f6;position:sticky;left:0;background:${isTotal?'#f7f8fa':'#fff'};z-index:1;">${row.n}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // Encabezado nivel 1 (meses + YTD)
+  let hdr1=`<th rowspan="2" style="padding:8px 10px;text-align:left;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#888;font-weight:600;position:sticky;left:0;background:#fafbfc;z-index:2;border-bottom:1px solid #eee;">Concepto</th>`;
+  meses.forEach((m,i)=>{
+    const sep=i>0?'border-left:1px solid #eee;':'';
+    hdr1+=`<th colspan="2" style="padding:8px 8px 4px;text-align:center;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#555;font-weight:700;${sep}">${m}</th>`;
+  });
+  hdr1+=`<th colspan="2" style="padding:8px 8px 4px;text-align:center;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#0d1b86;font-weight:700;border-left:2px solid #c5d8f8;background:#eef3fd;">YTD ${pl.periodo}</th>`;
+  // Encabezado nivel 2 (Ppto/Real)
+  let hdr2='';
+  meses.forEach((m,i)=>{
+    const sep=i>0?'border-left:1px solid #eee;':'';
+    hdr2+=`<th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#aaa;font-weight:600;${sep}">Ppto</th><th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#aaa;font-weight:600;">Real</th>`;
+  });
+  hdr2+=`<th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#0d1b86;font-weight:600;border-left:2px solid #c5d8f8;background:#eef3fd;">Ppto</th><th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#0d1b86;font-weight:600;background:#eef3fd;">Real</th>`;
+
+  return`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #0d1b86;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;display:flex;align-items:center;gap:7px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Estado de Resultados (P&amp;L) · Presupuesto vs Real
+      </div>
+      <span style="font-size:11px;color:#0d1b86;background:#eef3fd;border:1px solid #c5d8f8;padding:4px 10px;border-radius:3px;font-weight:600;">${pl.periodo} ${pl.anio||'2026'}</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:760px;">
+        <thead>
+          <tr style="background:#fafbfc;">${hdr1}</tr>
+          <tr style="background:#fafbfc;">${hdr2}</tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="font-size:10px;color:#bbb;margin-top:10px;font-style:italic;">Valores en soles (S/). YTD = acumulado ${pl.periodo}. Cifras entre paréntesis son negativas.</div>
+  </div>`;
+}
+
 function buildScorecard(){
   if(scEmp==='GENERAL'){
     setBanner('Holding La Rama — Scorecard General','Todas las empresas');
@@ -2178,6 +2260,9 @@ function buildScorecard(){
 
     html+=`<div class="sc-pillar"><div class="sc-pillar-hdr"><div class="sc-pillar-name">${SC_PILARES_ICON[pilar]} ${pilar}</div><div class="sc-pillar-stat"><b>${pV}</b> cumplidos · <b>${pA}</b> en riesgo · <b>${pR}</b> incumplidos</div></div>${pillarContent}</div>`;
   }
+
+  // P&L debajo de los KPIs (si la empresa tiene P&L cargado)
+  html+=buildPL(scEmp);
 
   return html;
 }
