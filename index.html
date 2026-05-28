@@ -1509,15 +1509,21 @@ function scGetAgg(){
     }
   }
   // Reglas de agregación:
-  //  - pct: siempre promedio de cumplimientos mensuales
-  //  - Real/Target agregado para mostrar en cards: si u==='money' Y NO invertido → suma | resto → promedio
+  //  - KPIs de dinero (money, no invertido): Real/Target = SUMA, y el % se calcula sobre las sumas (coherente con lo mostrado)
+  //  - Resto (%, ratios, scores, num, money invertido): Real/Target = promedio, y el % = promedio de cumplimientos mensuales
   const res={};
   for(const[k,v]of Object.entries(map)){
-    const avg=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
     const useSum=(v.u==='money'&&!v.inv);
     const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
     const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
-    res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
+    let pct;
+    if(useSum){
+      // % de cumplimiento basado en las sumas
+      pct=scCalcPct(aggT,aggR,v.inv);
+    } else {
+      pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
+    }
+    res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
   }
   return res;
 }
@@ -1781,11 +1787,16 @@ function buildScorecardGeneral(){
     }
     const res={};
     for(const[k,v]of Object.entries(map)){
-      const avg=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
       const useSum=(v.u==='money'&&!v.inv);
       const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
       const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
-      res[k]={p:v.p,inv:v.inv,u:v.u,pct:avg,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
+      let pct;
+      if(useSum){
+        pct=scCalcPct(aggT,aggR,v.inv);
+      } else {
+        pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
+      }
+      res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
     }
     return{agg:res,year:scGenYear,meses,yData};
   }
