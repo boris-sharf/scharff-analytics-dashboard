@@ -1154,6 +1154,79 @@ function viewCalendario(tasks){
 
 // ===================== SCORECARD =====================
 const MONEDA={QEMA:'$',INLOG:'S/',ARDE:'S/',SHARF:'S/',INMUEBLES:'S/'};
+
+// ── UNIDADES DE MEDIDA POR KPI ──
+// tipos: 'pct'(%), 'usd'($ con K/M), 'pen'(S/ con K/M), 'penMill'(S/ X.X M, dato ya en millones),
+//        'usdMiles'(US$ con K/M), 'estrellas'(★), 'dec'(decimal sin unidad), 'auto'(respeta u de la celda),
+//        'ent:<label>'(entero + etiqueta)
+const KPI_UM={
+  QEMA:{
+    'Rating OTAs':'auto','Rating Restaurantes':'estrellas','Revenue':'usd','ADR':'usd',
+    '% Ocupación':'pct','GOP':'usd','EBITDA':'usd','Rev x Guest F&B':'usd','Rev x Guest Exp':'usd',
+    'Payroll/Ingresos':'pct','Reclamos':'ent:reclamos','% Rotación':'pct',
+    'Satisfacción clima':'dec','NPS colaboradores':'pct'
+  },
+  INLOG:{
+    'Alumnos pregrado':'ent:alumnos','Alumnos Ed. Continua':'ent:alumnos','Ingreso total':'pen',
+    'Ingreso Pregrado':'pen','Ingreso Ed. Continua':'pen','Ingreso Inhouse':'pen','Margen bruto':'pen',
+    'Vacaciones ejecutadas':'ent:días','Satisfacción empleados':'pct','Satisfacción docentes':'pct'
+  },
+  SHARF:{
+    'Ingresos Netos':'penMill','EBITDA':'penMill','MB Aduanas':'pct','Ing. Carga Int.':'penMill',
+    'Morosidad Local':'pct','Morosidad >30d':'pct','SG&A/Ventas':'pct','Prom Paq/Dia FedEx':'ent:paq.',
+    'NSL DU':'pct','MBG NSL IB FedEx':'pct','Satisfacción Cliente':'pct','Clima Laboral':'pct',
+    'MB DU PE':'pen','FedEx Revenue':'usdMiles'
+  },
+  ARDE:{
+    'Revenue Home':'pen','Rev Home B2C':'pen','Rev Home B2B':'pen','Utilidad Bruta Home':'pen',
+    'Churn EQA (máq)':'ent:máq.','Payroll/Revenue':'pct','% Workplan':'pct'
+  },
+  INMUEBLES:{
+    'Renovación contratos':'ent:contratos','Satisfacción inquilino':'pct','Pago Mamina dentro fecha':'pct',
+    'Ingreso Cedros':'pen','Ingreso Calle B':'pen','Pagos fuera del mes':'ent:pagos','Incidencias':'ent:incidencias'
+  }
+};
+function kpiUM(emp,kpi){return (KPI_UM[emp]&&KPI_UM[emp][kpi])||null;}
+// Formatea un valor según la unidad del KPI. uFallback = u original de la celda (para 'auto' o si no hay dicc.)
+function kpiFmt(v,emp,kpi,uFallback){
+  if(v===null||v===undefined)return'—';
+  let um=kpiUM(emp,kpi);
+  if(!um||um==='auto')um=null; // auto y sin-dicc usan el comportamiento por uFallback
+  const numK=(val,cur)=>{const a=Math.abs(val);const s=val<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(val,2)}`;};
+  switch(um){
+    case 'pct':return scNum(v,2)+'%';
+    case 'usd':return numK(v,'$');
+    case 'pen':return numK(v,'S/');
+    case 'usdMiles':return numK(v,'US$');
+    case 'penMill':return `S/${scNum(v,2)}M`;
+    case 'estrellas':return `${scNum(v,2)} ★`;
+    case 'dec':return String(scNum(v,2));
+    default:
+      if(typeof um==='string'&&um.startsWith('ent:')){
+        const lbl=um.slice(4);
+        const n=scNum(v,0);
+        // Singular si es exactamente 1
+        let lblFinal=lbl;
+        if(Math.abs(n)===1){
+          if(lbl==='reclamos')lblFinal='reclamo';
+          else if(lbl==='alumnos')lblFinal='alumno';
+          else if(lbl==='días')lblFinal='día';
+          else if(lbl==='contratos')lblFinal='contrato';
+          else if(lbl==='pagos')lblFinal='pago';
+          else if(lbl==='incidencias')lblFinal='incidencia';
+          else if(lbl==='máq.')lblFinal='máq.';
+          else if(lbl==='paq.')lblFinal='paq.';
+        }
+        return `${n} ${lblFinal}`;
+      }
+  }
+  // Fallback: comportamiento histórico según u de la celda
+  const cur=MONEDA[emp]||'';
+  if(uFallback==='money')return numK(v,cur);
+  if(uFallback==='pct')return scNum(v,2)+'%';
+  if(uFallback==='score')return scNum(v,2);
+  return String(scNum(v,2));
+}
 const SC_MESES_ORD=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SC_PILARES=['Cliente Feliz','Equipo Feliz','Valor','Salud','Impacto'];
 const SC_PILARES_ICON={'Cliente Feliz':'😊','Equipo Feliz':'🙌','Valor':'💰','Salud':'🏥','Impacto':'🌱'};
@@ -1357,12 +1430,12 @@ function scFmtTrend(lastR,prevR,inv){
   const arrow=up?'↑':'↓';
   return`<span style="font-size:10px;font-weight:700;color:${col};margin-left:4px;">${arrow}${Math.abs(varPct).toFixed(1)}%</span>`;
 }
-function scFmtDelta(t,r,u,inv,emp){
+function scFmtDelta(t,r,u,inv,emp,kpi){
   if(t===null||r===null||t===undefined||r===undefined)return'';
   const diff=r-t;if(diff===0)return'<span class="sc-delta delta-neu">= target</span>';
   const isGood=inv?diff<=0:diff>=0;
   const cls=isGood?'delta-pos':'delta-neg';
-  const label=scFmtVal(Math.abs(diff),u,emp);
+  const label=kpi?kpiFmt(Math.abs(diff),emp,kpi,u):scFmtVal(Math.abs(diff),u,emp);
   const arrow=diff>0?'↑':'↓';
   return`<span class="sc-delta ${cls}">${arrow} ${label}</span>`;
 }
@@ -1447,7 +1520,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
       const useAgg=v.aggR!==undefined&&v.aggR!==null;
       const realV=useAgg?v.aggR:v.lastR;
       const targetV=useAgg?v.aggT:v.lastT;
-      return{name:k,pct:v.pct,real:scFmtV(realV,v.u),target:scFmtV(targetV,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
+      return{name:k,pct:v.pct,real:kpiFmt(realV,empName,k,v.u),target:kpiFmt(targetV,empName,k,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
     })
   }))));
 
@@ -1500,17 +1573,22 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
   const alertasHtml2=alertas.length>0
     ?alertas.map(([k,v])=>{
         const w=Math.min(100,Math.round(v.pct));
-        return`<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:#fdeef0;border-radius:3px;margin-bottom:5px;">
-          <div style="width:6px;height:6px;border-radius:50%;background:#b62e2e;flex-shrink:0;margin-top:4px;"></div>
+        const showAgg=v.nMeses>1&&v.aggR!==null&&v.aggR!==undefined;
+        const realV=showAgg?v.aggR:v.lastR;
+        const targetV=showAgg?v.aggT:v.lastT;
+        const aggHint=showAgg?`<span style="font-size:9px;color:#999;font-weight:500;margin-left:5px;">${v.aggMode==='sum'?'Σ':'⌀'} ${v.nMeses}m</span>`:'';
+        const invHint=v.inv?'<span style="font-size:9px;color:#999;margin-right:3px;" title="Menos es mejor">↓</span>':'';
+        return`<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;background:#fdeef0;border-radius:3px;margin-bottom:6px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#b62e2e;flex-shrink:0;margin-top:5px;"></div>
           <div style="flex:1;min-width:0;">
-            <div style="display:flex;justify-content:space-between;gap:4px;flex-wrap:wrap;">
-              <span style="font-size:11px;color:#444;font-weight:500;">${k}</span>
-              <span style="font-size:11px;font-weight:700;color:#b62e2e;white-space:nowrap;">${scFmtVal(v.lastR,v.u,empName)} / ${scFmtVal(v.lastT,v.u,empName)}</span>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px;">
+              <span style="font-size:11.5px;color:#222;font-weight:600;">${invHint}${k}${aggHint}</span>
+              <span style="white-space:nowrap;text-align:right;"><span style="font-size:9px;color:#a86b6b;font-weight:500;text-transform:uppercase;letter-spacing:.3px;margin-right:4px;">Cumplimiento</span><span style="font-size:12px;font-weight:700;color:#b62e2e;">${Math.round(v.pct)}%</span></span>
             </div>
-            <div style="height:3px;background:#f5c5c5;border-radius:2px;margin-top:4px;overflow:hidden;">
+            <div style="font-size:10.5px;color:#8a1a1a;margin-top:3px;">Real <b>${kpiFmt(realV,empName,k,v.u)}</b> &nbsp;·&nbsp; Target <b>${kpiFmt(targetV,empName,k,v.u)}</b></div>
+            <div style="height:3px;background:#f5c5c5;border-radius:2px;margin-top:5px;overflow:hidden;">
               <div style="height:100%;width:${w}%;background:#b62e2e;border-radius:2px;"></div>
             </div>
-            <div style="font-size:10px;color:#b62e2e;font-weight:700;margin-top:2px;">${Math.round(v.pct)}%</div>
           </div>
         </div>`;
       }).join('')
@@ -1569,7 +1647,7 @@ function hmBuildTooltipHTML(title,subtitle,avgPct,kpisInfo,groupByPilar){
       return`<div style="margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;background:#fafafa;border-radius:3px;margin-bottom:4px;">
           <span style="font-size:11px;font-weight:700;color:#222;">${icon} ${pilar}</span>
-          <span style="font-size:10px;font-weight:700;color:${pcol};">${pavgTxt}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="font-size:8px;color:#999;font-weight:500;text-transform:uppercase;">Cumpl.</span><span style="font-size:10px;font-weight:700;color:${pcol};">${pavgTxt}</span></span>
         </div>
         ${pkpis.map(renderKpi).join('')}
       </div>`;
@@ -1582,8 +1660,9 @@ function hmBuildTooltipHTML(title,subtitle,avgPct,kpisInfo,groupByPilar){
       <div class="hm-tt-pilar">${title}</div>
       <div style="font-size:10px;color:#999;margin-top:2px;letter-spacing:.3px;text-transform:uppercase;">${subtitle}</div>
     </div>
-    ${avgPct!==null&&avgPct!==undefined?`<span class="hm-tt-pct" style="background:${bg};color:${tc};">${avgTxt}</span>`:''}
+    ${avgPct!==null&&avgPct!==undefined?`<span style="display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px;"><span style="font-size:8px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.3px;">Cumplimiento</span><span class="hm-tt-pct" style="background:${bg};color:${tc};">${avgTxt}</span></span>`:''}
   </div>
+  <div style="font-size:9px;color:#aaa;margin-bottom:8px;display:flex;justify-content:flex-end;gap:6px;">cada KPI: Real · Target · <span style="font-weight:600;">% Cumpl.</span></div>
   ${rows}`;
 }
 
@@ -1612,8 +1691,8 @@ function buildHeatmap(emp,year){
       // Detalle de KPIs para tooltip
       const kpisInfo=kpisP.map(([k,v])=>({
         name:k,
-        real:scFmtV(v.r,v.u),
-        target:scFmtV(v.t,v.u),
+        real:kpiFmt(v.r,emp,k,v.u),
+        target:kpiFmt(v.t,emp,k,v.u),
         pct:scCalcPct(v.t,v.r,v.inv),
         inv:!!v.inv,
         u:v.u
@@ -1747,7 +1826,7 @@ function buildScorecardGeneral(){
       const useAgg=v.aggR!==undefined&&v.aggR!==null;
       const realV=useAgg?v.aggR:v.lastR;
       const targetV=useAgg?v.aggT:v.lastT;
-      return{name:k,pct:v.pct,real:scFmtV(realV,v.u),target:scFmtV(targetV,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
+      return{name:k,pct:v.pct,real:kpiFmt(realV,emp,k,v.u),target:kpiFmt(targetV,emp,k,v.u),cls:sem(v.pct),aggMode:v.aggMode||'avg',nMeses:v.nMeses||1,inv:v.inv};
     })})));
     return`<div style="background:#fff;border-radius:3px;padding:14px;border-top:3px solid ${empCol};" data-emp="${emp}" data-tooltip='${ttData.replace(/'/g,"&apos;")}'>
       <div style="font-size:11px;font-weight:700;color:${empCol};margin-bottom:10px;">${EMP_LABELS[emp]}</div>
@@ -1822,13 +1901,19 @@ function buildScorecardGeneral(){
     <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Top 5 KPIs críticos del holding</div>
     ${top5.map(item=>{
       const w=Math.min(100,Math.round(item.pct));
-      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;">
-        <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${EMP_COLORS[item.emp]}22;color:${EMP_COLORS[item.emp]};font-weight:700;flex-shrink:0;min-width:60px;text-align:center;">${item.emp}</span>
+      const showAgg=item.nMeses>1&&item.aggR!==null&&item.aggR!==undefined;
+      const realV=showAgg?item.aggR:item.lastR;
+      const targetV=showAgg?item.aggT:item.lastT;
+      const invHint=item.inv?'<span style="font-size:9px;color:#999;margin-right:3px;" title="Menos es mejor">↓</span>':'';
+      const fmtV=(v,u)=>{if(v===null||v===undefined)return'—';const cur=MONEDA[item.emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));};
+      return`<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f5f5f5;">
+        <span style="font-size:10px;padding:3px 8px;border-radius:3px;background:${EMP_COLORS[item.emp]}22;color:${EMP_COLORS[item.emp]};font-weight:700;flex-shrink:0;min-width:60px;text-align:center;margin-top:1px;">${item.emp}</span>
         <div style="flex:1;min-width:0;">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:3px;">
-            <span style="font-size:12px;color:#333;font-weight:500;">${item.k}</span>
-            <span style="font-size:12px;font-weight:700;color:#b62e2e;white-space:nowrap;">${Math.round(item.pct)}%</span>
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:2px;">
+            <span style="font-size:12px;color:#333;font-weight:600;">${invHint}${item.k}</span>
+            <span style="white-space:nowrap;text-align:right;"><span style="font-size:9px;color:#a86b6b;font-weight:500;text-transform:uppercase;letter-spacing:.3px;margin-right:4px;">Cumplimiento</span><span style="font-size:12px;font-weight:700;color:#b62e2e;">${Math.round(item.pct)}%</span></span>
           </div>
+          <div style="font-size:10.5px;color:#8a1a1a;margin-bottom:4px;">Real <b>${kpiFmt(realV,item.emp,item.k,item.u)}</b> &nbsp;·&nbsp; Target <b>${kpiFmt(targetV,item.emp,item.k,item.u)}</b></div>
           <div style="height:5px;background:#f5c5c5;border-radius:2px;overflow:hidden;">
             <div style="height:100%;width:${w}%;background:#b62e2e;border-radius:2px;"></div>
           </div>
@@ -1853,8 +1938,8 @@ function buildScorecardGeneral(){
       // Detalle de KPIs agrupados por pilar
       const kpisInfo=Object.entries(mesData).map(([k,v])=>({
         name:k,
-        real:hmFmtV(v.r,v.u,emp),
-        target:hmFmtV(v.t,v.u,emp),
+        real:kpiFmt(v.r,emp,k,v.u),
+        target:kpiFmt(v.t,emp,k,v.u),
         pct:scCalcPct(v.t,v.r,v.inv),
         inv:!!v.inv,
         u:v.u,
@@ -2019,7 +2104,7 @@ function buildScorecard(){
         const displayR=showAgg?v.aggR:v.lastR;
         const displayT=showAgg?v.aggT:v.lastT;
         const isSingle=v.nMeses===1;
-        const delta=isSingle?scFmtDelta(displayT,displayR,v.u,v.inv,scEmp):'';
+        const delta=isSingle?scFmtDelta(displayT,displayR,v.u,v.inv,scEmp,k):'';
         const trend=isSingle?scFmtTrend(v.lastR,v.prevR,v.inv):'';
         const aggBadge=showAgg?`<span style="font-size:9px;color:#888;font-weight:500;margin-left:5px;background:#f0f0f0;padding:2px 6px;border-radius:3px;">${v.aggMode==='sum'?'Σ':'⌀'} ${v.nMeses} m</span>`:'';
         const cid='evo-'+k.replace(/[^a-z0-9]/gi,'_')+'-'+scEmp+'-'+scLoc+'-'+scYear;
@@ -2028,12 +2113,13 @@ function buildScorecard(){
         const labelsStr=JSON.stringify(mesesAll.map(m=>m.slice(0,3)));
         const realStr=JSON.stringify(realData);
         const targetStr=JSON.stringify(targetData);
-        const yUnit=v.u==='money'?'$':v.u==='pct'?'%':'';
+        const _um=kpiUM(scEmp,k);
+        const yUnit=_um==='pct'?'%':_um==='usd'?'$':_um==='pen'?'S/':_um==='penMill'?'S/ M':_um==='usdMiles'?'US$':_um==='estrellas'?'★':(typeof _um==='string'&&_um.startsWith('ent:'))?_um.slice(4):(v.u==='money'?(MONEDA[scEmp]||''):v.u==='pct'?'%':'');
         const lineColor=scEmp==='QEMA'?'#69231e':scEmp==='INLOG'?'#0d1b86':scEmp==='ARDE'?'#000000':scEmp==='SHARF'?'#ff6568':'#74579D';
         const cardHtml=`<div class="sc-kcell ${sc}" style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">
           <div class="sc-kcell-hdr"><div class="sc-kcell-name">${k}${aggBadge}</div><div class="sem ${sc}"></div></div>
-          <div class="sc-kcell-real ${sc}">${scFmtVal(displayR,v.u,scEmp)}${delta}${trend}</div>
-          <div class="sc-kcell-vs">Target: <b>${scFmtVal(displayT,v.u,scEmp)}</b></div>
+          <div class="sc-kcell-real ${sc}">${kpiFmt(displayR,scEmp,k,v.u)}${delta}${trend}</div>
+          <div class="sc-kcell-vs">Target: <b>${kpiFmt(displayT,scEmp,k,v.u)}</b></div>
           <div class="sc-kcell-bar"><div class="sc-kcell-fill ${sc}" style="width:${w}%"></div></div>
           ${v.inv?'<div class="sc-kcell-note">↓ Más bajo = mejor</div>':''}
         </div>`;
@@ -2121,7 +2207,7 @@ async function generarConclusiones(){
   const moneda=MONEDA[scEmp];
   const lineas=Object.entries(agg).filter(([,v])=>v.pct!==null).map(([k,v])=>{
     const estado=v.pct>=95?'CUMPLIDO':v.pct>=80?'EN RIESGO':'INCUMPLIDO';
-    return`- ${k}: Real ${scFmtVal(v.lastR,v.u,scEmp)} vs Target ${scFmtVal(v.lastT,v.u,scEmp)} (${Math.round(v.pct)}% de cumplimiento) — ${estado}`;
+    return`- ${k}: Real ${kpiFmt(v.lastR,scEmp,k,v.u)} vs Target ${kpiFmt(v.lastT,scEmp,k,v.u)} (${Math.round(v.pct)}% de cumplimiento) — ${estado}`;
   }).join('\n');
 
   const prompt=`Eres el analista de datos del Holding La Rama. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño, (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 180 palabras en total.`;
@@ -2213,8 +2299,9 @@ function renderView(view){
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;">
                 <div style="width:9px;height:9px;border-radius:2px;background:${col};flex-shrink:0;"></div>
                 <span style="font-size:13px;font-weight:600;color:#222;">${d.pilar}</span>
-                ${d.pct!==null?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:${bg};color:${tc};margin-left:auto;">${avgTxt}</span>`:''}
+                ${d.pct!==null?`<span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;"><span style="font-size:8px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.3px;">Cumplimiento</span><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;background:${bg};color:${tc};">${avgTxt}</span></span>`:''}
               </div>
+              <div style="font-size:9px;color:#aaa;margin-bottom:8px;display:flex;justify-content:flex-end;gap:6px;">por KPI: Real · Target · <span style="font-weight:600;">% Cumpl.</span></div>
               ${rows}`;
             tt.style.opacity='1';
             const svgRect=svgEl.getBoundingClientRect();
@@ -2271,7 +2358,7 @@ function renderView(view){
                 </div>
               </div>`;
             }).join('');}
-            tt2.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;"><div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div><span style="font-size:12px;font-weight:600;color:#222;">${d.pilar}</span>${d.pct!==null?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:${bg};color:${tc};margin-left:auto;">${Math.round(d.pct)}%</span>`:''}</div>${rows}`;
+            tt2.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;"><div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div><span style="font-size:12px;font-weight:600;color:#222;">${d.pilar}</span>${d.pct!==null?`<span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;"><span style="font-size:8px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.3px;">Cumpl.</span><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:${bg};color:${tc};">${Math.round(d.pct)}%</span></span>`:''}</div><div style="font-size:9px;color:#aaa;margin-bottom:8px;display:flex;justify-content:flex-end;gap:6px;">por KPI: Real · Target · <span style="font-weight:600;">% Cumpl.</span></div>${rows}`;
             tt2.style.opacity='1';
             const svgRect2=svgEl2.getBoundingClientRect();
             const wrap2=tt2.parentElement.getBoundingClientRect();
