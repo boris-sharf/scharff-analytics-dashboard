@@ -1213,6 +1213,12 @@ function evoAxisFmt(v,emp,kpi,uFallback){
 }
 
 function kpiUM(emp,kpi){return (KPI_UM[emp]&&KPI_UM[emp][kpi])||null;}
+// KPIs que aunque son montos (money) se AGREGAN POR PROMEDIO, no por suma
+// (tarifas/ratios diarios: ej. ADR = Average Daily Rate, tickets promedio)
+const KPI_PROMEDIO=new Set([
+  'ADR','Ticket Prom EQA Digital','Ticket Prom EQA Masivo','Rev x Guest F&B','Rev x Guest Exp'
+]);
+function kpiUsaPromedio(kpi){return KPI_PROMEDIO.has(kpi);}
 // Formatea un valor según la unidad del KPI. uFallback = u original de la celda (para 'auto' o si no hay dicc.)
 function kpiFmt(v,emp,kpi,uFallback){
   if(v===null||v===undefined)return'—';
@@ -1529,7 +1535,7 @@ function scGetAgg(){
   //  - Resto (%, ratios, scores, num, money invertido): Real/Target = promedio, y el % = promedio de cumplimientos mensuales
   const res={};
   for(const[k,v]of Object.entries(map)){
-    const useSum=(v.u==='money'&&!v.inv);
+    const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
     const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
     const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
     let pct;
@@ -1541,6 +1547,53 @@ function scGetAgg(){
     }
     res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
   }
+  return res;
+}
+
+// KPIs en rojo (<80%) en CADA UNO de los últimos 3 meses con datos (ignora el filtro de meses).
+// Parámetros opcionales (para vista general): empKey, locKey, year. Si no se pasan, usa los globales.
+function scKpisRojos3Meses(empKey,locKey,year){
+  const E=empKey||scEmp;
+  const L=locKey||scLoc;
+  const Y=year||scYear;
+  if(E==='GENERAL')return[];
+  const emp=SC_EMPRESAS[E];
+  if(!emp)return[];
+  let yData;
+  if(E==='QEMA'&&L&&L!=='consolidado'&&emp.yearsLoc?.[L]?.[Y]){
+    yData=emp.yearsLoc[L][Y];
+  } else {
+    yData=emp.years[Y]||{};
+  }
+  const mesesConDatos=SC_MESES_ORD.filter(m=>yData[m]&&Object.keys(yData[m]).length>0);
+  if(mesesConDatos.length===0)return[];
+  const ult3=mesesConDatos.slice(-3);
+  const porKpi={};
+  for(const m of ult3){
+    for(const[k,v]of Object.entries(yData[m]||{})){
+      const p=scCalcPct(v.t,v.r,v.inv);
+      if(!porKpi[k])porKpi[k]={pcts:[],meta:v,vals:[]};
+      porKpi[k].pcts.push(p);
+      porKpi[k].vals.push({m,t:v.t,r:v.r,pct:p});
+      porKpi[k].meta=v;
+    }
+  }
+  const res=[];
+  for(const[k,info]of Object.entries(porKpi)){
+    if(info.pcts.length<ult3.length)continue;
+    if(info.pcts.some(p=>p===null))continue;
+    if(!info.pcts.every(p=>p<80))continue;
+    const avgPct=info.pcts.reduce((a,b)=>a+b,0)/info.pcts.length;
+    const v=info.meta;
+    const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
+    const reals=info.vals.map(x=>x.r).filter(x=>x!==null&&x!==undefined);
+    const targets=info.vals.map(x=>x.t).filter(x=>x!==null&&x!==undefined);
+    const aggR=reals.length?(useSum?reals.reduce((a,b)=>a+b,0):reals.reduce((a,b)=>a+b,0)/reals.length):null;
+    const aggT=targets.length?(useSum?targets.reduce((a,b)=>a+b,0):targets.reduce((a,b)=>a+b,0)/targets.length):null;
+    const last=info.vals[info.vals.length-1];
+    res.push([k,{pct:avgPct,inv:v.inv,u:v.u,p:v.p,aggR,aggT,nMeses:info.pcts.length,aggMode:useSum?'sum':'avg',lastR:last.r,lastT:last.t}]);
+  }
+  res.sort((a,b)=>a[1].pct-b[1].pct);
   return res;
 }
 
@@ -1636,7 +1689,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
           </div>
         </div>`;
       }).join('')
-    :`<div style="font-size:12px;color:#bbb;text-align:center;padding:20px 0;">✓ Todos los KPIs en target</div>`;
+    :`<div style="font-size:12px;color:#bbb;text-align:center;padding:20px 0;">✓ Ningún KPI en rojo los últimos 3 meses</div>`;
 
   return{radarHtml,alertasHtml2};
 }
@@ -1710,6 +1763,47 @@ function hmBuildTooltipHTML(title,subtitle,avgPct,kpisInfo,groupByPilar){
   ${rows}`;
 }
 
+// Expandir/colapsar heatmap general anidado (empresa -> pilar -> KPI)
+function hmGenToggle(hmId,rowKey,level){
+  // Hijos directos de este nodo
+  const childs=document.querySelectorAll(`tr[data-hmgroup="${hmId}"][data-hmparent="${rowKey}"]`);
+  if(childs.length===0)return;
+  const visible=(childs[0].style.display!=='none');
+  const fila=document.querySelector(`tr[data-hmgroup="${hmId}"][data-hmrow="${rowKey}"]`);
+  if(visible){
+    // Colapsar: ocultar hijos y descendientes recursivamente
+    function ocultarDesc(key){
+      document.querySelectorAll(`tr[data-hmgroup="${hmId}"][data-hmparent="${key}"]`).forEach(c=>{
+        c.style.display='none';
+        const cr=c.querySelector('.hm-caret');if(cr)cr.style.transform='';
+        const ck=c.getAttribute('data-hmrow');
+        if(ck)ocultarDesc(ck);
+      });
+    }
+    ocultarDesc(rowKey);
+    if(fila){const caret=fila.querySelector('.hm-caret');if(caret)caret.style.transform='';}
+  } else {
+    childs.forEach(c=>{c.style.display='';});
+    if(fila){const caret=fila.querySelector('.hm-caret');if(caret)caret.style.transform='rotate(90deg)';}
+  }
+  if(typeof bindHeatmapTooltips==='function')bindHeatmapTooltips();
+}
+
+// Expandir/colapsar los KPIs de un pilar en el heatmap por empresa
+function hmTogglePilar(hmId,pilarIdx){
+  const childs=document.querySelectorAll(`tr[data-hmgroup="${hmId}"][data-hmpilarchild="${pilarIdx}"]`);
+  const pilarRow=document.querySelector(`tr[data-hmgroup="${hmId}"][data-hmpilar="${pilarIdx}"]`);
+  if(childs.length===0)return;
+  const visible=(childs[0].style.display!=='none');
+  childs.forEach(c=>{c.style.display=visible?'none':'';});
+  if(pilarRow){
+    const caret=pilarRow.querySelector('.hm-caret');
+    if(caret)caret.style.transform=visible?'':'rotate(90deg)';
+  }
+  // Re-bind de tooltips para las celdas recién mostradas
+  if(typeof bindHeatmapTooltips==='function')bindHeatmapTooltips();
+}
+
 function buildHeatmap(emp,year){
   const empData=SC_EMPRESAS[emp];
   let yData;
@@ -1724,33 +1818,56 @@ function buildHeatmap(emp,year){
   function hmTxt(p){return p===null?'—':Math.round(p)+'%';}
   function scFmtV(v,u){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
 
-  const pilarRows=SC_PILARES.map(pilar=>{
+  const hmId='hm_'+emp+'_'+(scLoc||'x');
+  // Identificar todos los KPIs por pilar (unión de los KPIs presentes en cualquier mes)
+  const pilarRows=SC_PILARES.map((pilar,pIdx)=>{
     if(pilar==='Impacto')return null;
+    // KPIs únicos de este pilar en todo el año
+    const kpiNames=[];
+    meses.forEach(m=>{
+      Object.entries(yData[m]||{}).forEach(([k,v])=>{
+        if(v.p===pilar && !kpiNames.includes(k))kpiNames.push(k);
+      });
+    });
     const cells=meses.map(m=>{
       const mesData=yData[m]||{};
       const kpisP=Object.entries(mesData).filter(([,v])=>v.p===pilar);
       const pcts=kpisP.map(([,v])=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
       const avg=pcts.length>0?pcts.reduce((a,b)=>a+b,0)/pcts.length:null;
       const cls=hmCls(avg);
-      // Detalle de KPIs para tooltip
       const kpisInfo=kpisP.map(([k,v])=>({
-        name:k,
-        real:kpiFmt(v.r,emp,k,v.u),
-        target:kpiFmt(v.t,emp,k,v.u),
-        pct:scCalcPct(v.t,v.r,v.inv),
-        inv:!!v.inv,
-        u:v.u
+        name:k,real:kpiFmt(v.r,emp,k,v.u),target:kpiFmt(v.t,emp,k,v.u),
+        pct:scCalcPct(v.t,v.r,v.inv),inv:!!v.inv,u:v.u
       }));
       const ttData=JSON.stringify({title:`${SC_PILARES_ICON[pilar]} ${pilar}`,subtitle:`${m} ${year}`,avgPct:avg,kpis:kpisInfo}).replace(/'/g,"&apos;");
       return`<td><span class="hm-cell ${cls}" data-hmtt='${ttData}'>${hmTxt(avg)}</span></td>`;
     }).join('');
-    return`<tr><td class="pilar-name">${SC_PILARES_ICON[pilar]} ${pilar}</td>${cells}</tr>`;
+    const tieneKpis=kpiNames.length>0;
+    const caret=tieneKpis?`<span class="hm-caret" style="display:inline-block;width:11px;color:#0d1b86;transition:transform .15s;">▸</span> `:'';
+    const cursor=tieneKpis?'cursor:pointer;':'';
+    const onclick=tieneKpis?`onclick="hmTogglePilar('${hmId}',${pIdx})"`:'';
+    const pilarRow=`<tr data-hmgroup="${hmId}" data-hmpilar="${pIdx}"><td class="pilar-name" ${onclick} style="${cursor}">${caret}${SC_PILARES_ICON[pilar]} ${pilar}</td>${cells}</tr>`;
+    // Filas de KPIs (ocultas inicialmente)
+    const kpiRows=kpiNames.map(kn=>{
+      const kcells=meses.map(m=>{
+        const v=(yData[m]||{})[kn];
+        if(!v)return`<td><span class="hm-cell hm-gr" style="opacity:.5;">·</span></td>`;
+        const pct=scCalcPct(v.t,v.r,v.inv);
+        const cls=hmCls(pct);
+        const kpisInfo=[{name:kn,real:kpiFmt(v.r,emp,kn,v.u),target:kpiFmt(v.t,emp,kn,v.u),pct,inv:!!v.inv,u:v.u}];
+        const ttData=JSON.stringify({title:kn,subtitle:`${m} ${year}`,avgPct:pct,kpis:kpisInfo}).replace(/'/g,"&apos;");
+        return`<td><span class="hm-cell ${cls}" data-hmtt='${ttData}' style="font-size:9px;">${hmTxt(pct)}</span></td>`;
+      }).join('');
+      const invHint=meses.some(m=>(yData[m]||{})[kn]?.inv)?'<span style="font-size:8px;color:#999;" title="Menos es mejor">↓</span> ':'';
+      return`<tr data-hmgroup="${hmId}" data-hmpilarchild="${pIdx}" style="display:none;"><td class="pilar-name" style="padding-left:26px;font-size:10px;font-weight:400;color:#777;">${invHint}${kn}</td>${kcells}</tr>`;
+    }).join('');
+    return pilarRow+kpiRows;
   }).filter(Boolean).join('');
 
   const headers=meses.map(m=>`<th>${m.slice(0,3)}</th>`).join('');
 
   return`<div class="heatmap-box" id="sc-heatmap-emp">
-    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(haz clic en una celda para ver el detalle)</span></div>
+    <div class="heatmap-lbl"><span class="heatmap-dot"></span>Cumplimiento por pilar · mes a mes <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(clic en un pilar ▸ para ver sus KPIs · clic en celda para detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Pilar</th>${headers}</tr></thead>
       <tbody>${pilarRows}</tbody>
@@ -1803,7 +1920,7 @@ function buildScorecardGeneral(){
     }
     const res={};
     for(const[k,v]of Object.entries(map)){
-      const useSum=(v.u==='money'&&!v.inv);
+      const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
       const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
       const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
       let pct;
@@ -1937,17 +2054,16 @@ function buildScorecardGeneral(){
   </div>`;
 
   const allCriticos=[];
-  empData.forEach(({emp,agg})=>{
-    Object.entries(agg).forEach(([k,v])=>{
-      if(v.pct!==null&&v.pct<80){
-        allCriticos.push({emp,k,...v});
-      }
+  empData.forEach(({emp})=>{
+    const rojos3=scKpisRojos3Meses(emp,emp==='QEMA'?'consolidado':null,scGenYear);
+    rojos3.forEach(([k,v])=>{
+      allCriticos.push({emp,k,...v});
     });
   });
   allCriticos.sort((a,b)=>a.pct-b.pct);
   const top5=allCriticos.slice(0,5);
   const top5Html=top5.length>0?`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #b62e2e;">
-    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Top 5 KPIs críticos del holding</div>
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Top 5 KPIs críticos del holding (rojos últimos 3 meses)</div>
     ${top5.map(item=>{
       const w=Math.min(100,Math.round(item.pct));
       const showAgg=item.nMeses>1&&item.aggR!==null&&item.aggR!==undefined;
@@ -1970,45 +2086,70 @@ function buildScorecardGeneral(){
       </div>`;
     }).join('')}
   </div>`:`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #22a869;">
-    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Top 5 KPIs críticos del holding</div>
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:10px;">Top 5 KPIs críticos del holding (rojos últimos 3 meses)</div>
     <div style="font-size:13px;color:#22a869;font-weight:600;text-align:center;padding:10px 0;">✓ Sin KPIs incumplidos en el holding</div>
   </div>`;
 
   function hmCls(p){return p===null?'hm-gr':p>=95?'hm-g':p>=80?'hm-y':'hm-r';}
   function hmTxt(p){return p===null?'—':Math.round(p)+'%';}
   function hmFmtV(v,u,emp){if(v===null||v===undefined)return'—';const cur=MONEDA[emp]||'';if(u==='money'){const a=Math.abs(v);const s=v<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(v,2)}`;}if(u==='pct')return scNum(v,2)+'%';if(u==='score')return scNum(v,2);return String(scNum(v,2));}
+  const hmGenId='hmgen';
+  const PILAR_ORD_LIST=['Cliente Feliz','Equipo Feliz','Valor','Salud'];
+  let empIdxCounter=0;
   const heatmapRows=EMPRESAS.map(emp=>{
     const yData=SC_EMPRESAS[emp].years[scGenYear]||{};
-    const cells=allMeses.map(m=>{
+    const empIdx=empIdxCounter++;
+    // Fila empresa (nivel 0)
+    const empCells=allMeses.map(m=>{
       const mesData=yData[m];
       if(!mesData)return`<td><span class="hm-cell hm-gr">—</span></td>`;
       const allP=Object.values(mesData).map(v=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
       const avg=allP.length>0?allP.reduce((a,b)=>a+b,0)/allP.length:null;
-      // Detalle de KPIs agrupados por pilar
-      const kpisInfo=Object.entries(mesData).map(([k,v])=>({
-        name:k,
-        real:kpiFmt(v.r,emp,k,v.u),
-        target:kpiFmt(v.t,emp,k,v.u),
-        pct:scCalcPct(v.t,v.r,v.inv),
-        inv:!!v.inv,
-        u:v.u,
-        pilar:v.p
-      }));
-      // Ordenar por pilar y luego por % desc
+      const kpisInfo=Object.entries(mesData).map(([k,v])=>({name:k,real:kpiFmt(v.r,emp,k,v.u),target:kpiFmt(v.t,emp,k,v.u),pct:scCalcPct(v.t,v.r,v.inv),inv:!!v.inv,u:v.u,pilar:v.p}));
       const PILAR_ORD={'Cliente Feliz':0,'Equipo Feliz':1,'Valor':2,'Salud':3,'Impacto':4};
-      kpisInfo.sort((a,b)=>{
-        const pa=PILAR_ORD[a.pilar]??99,pb=PILAR_ORD[b.pilar]??99;
-        if(pa!==pb)return pa-pb;
-        const pca=a.pct===null?-1:a.pct,pcb=b.pct===null?-1:b.pct;
-        return pcb-pca;
-      });
+      kpisInfo.sort((a,b)=>{const pa=PILAR_ORD[a.pilar]??99,pb=PILAR_ORD[b.pilar]??99;if(pa!==pb)return pa-pb;return (b.pct??-1)-(a.pct??-1);});
       const ttData=JSON.stringify({title:emp,subtitle:`${m} ${scGenYear}`,avgPct:avg,kpis:kpisInfo,groupByPilar:true}).replace(/'/g,"&apos;");
       return`<td><span class="hm-cell ${hmCls(avg)}" data-hmtt='${ttData}'>${hmTxt(avg)}</span></td>`;
     }).join('');
-    return`<tr><td class="pilar-name" style="color:${EMP_COLORS[emp]};font-weight:700;">${emp}</td>${cells}</tr>`;
+    const empRow=`<tr data-hmgroup="${hmGenId}" data-hmrow="emp${empIdx}" data-hmlevel="0"><td class="pilar-name" onclick="hmGenToggle('${hmGenId}','emp${empIdx}',0)" style="color:${EMP_COLORS[emp]};font-weight:700;cursor:pointer;"><span class="hm-caret" style="display:inline-block;width:11px;color:${EMP_COLORS[emp]};transition:transform .15s;">▸</span> ${emp}</td>${empCells}</tr>`;
+
+    // Filas de pilar (nivel 1) y KPI (nivel 2)
+    let subRows='';
+    PILAR_ORD_LIST.forEach((pilar,pi)=>{
+      // KPIs de este pilar en la empresa (unión en el año)
+      const kpiNames=[];
+      allMeses.forEach(m=>{Object.entries(yData[m]||{}).forEach(([k,v])=>{if(v.p===pilar&&!kpiNames.includes(k))kpiNames.push(k);});});
+      if(kpiNames.length===0)return;
+      const pilarKey=`emp${empIdx}_p${pi}`;
+      const pilarCells=allMeses.map(m=>{
+        const mesData=yData[m]||{};
+        const kpisP=Object.entries(mesData).filter(([,v])=>v.p===pilar);
+        const pcts=kpisP.map(([,v])=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
+        const avg=pcts.length>0?pcts.reduce((a,b)=>a+b,0)/pcts.length:null;
+        if(kpisP.length===0)return`<td><span class="hm-cell hm-gr" style="opacity:.5;">·</span></td>`;
+        const kpisInfo=kpisP.map(([k,v])=>({name:k,real:kpiFmt(v.r,emp,k,v.u),target:kpiFmt(v.t,emp,k,v.u),pct:scCalcPct(v.t,v.r,v.inv),inv:!!v.inv,u:v.u}));
+        const ttData=JSON.stringify({title:`${SC_PILARES_ICON[pilar]} ${pilar}`,subtitle:`${emp} · ${m} ${scGenYear}`,avgPct:avg,kpis:kpisInfo}).replace(/'/g,"&apos;");
+        return`<td><span class="hm-cell ${hmCls(avg)}" data-hmtt='${ttData}' style="font-size:9px;">${hmTxt(avg)}</span></td>`;
+      }).join('');
+      subRows+=`<tr data-hmgroup="${hmGenId}" data-hmrow="${pilarKey}" data-hmparent="emp${empIdx}" data-hmlevel="1" style="display:none;"><td class="pilar-name" onclick="hmGenToggle('${hmGenId}','${pilarKey}',1)" style="padding-left:24px;font-size:10px;font-weight:600;color:#555;cursor:pointer;"><span class="hm-caret" style="display:inline-block;width:10px;color:#0d1b86;transition:transform .15s;">▸</span> ${SC_PILARES_ICON[pilar]} ${pilar}</td>${pilarCells}</tr>`;
+      // KPIs (nivel 2)
+      kpiNames.forEach(kn=>{
+        const kcells=allMeses.map(m=>{
+          const v=(yData[m]||{})[kn];
+          if(!v)return`<td><span class="hm-cell hm-gr" style="opacity:.4;">·</span></td>`;
+          const pct=scCalcPct(v.t,v.r,v.inv);
+          const kpisInfo=[{name:kn,real:kpiFmt(v.r,emp,kn,v.u),target:kpiFmt(v.t,emp,kn,v.u),pct,inv:!!v.inv,u:v.u}];
+          const ttData=JSON.stringify({title:kn,subtitle:`${emp} · ${m} ${scGenYear}`,avgPct:pct,kpis:kpisInfo}).replace(/'/g,"&apos;");
+          return`<td><span class="hm-cell ${hmCls(pct)}" data-hmtt='${ttData}' style="font-size:8.5px;">${hmTxt(pct)}</span></td>`;
+        }).join('');
+        const invHint=allMeses.some(m=>(yData[m]||{})[kn]?.inv)?'<span style="font-size:8px;color:#999;" title="Menos es mejor">↓</span> ':'';
+        subRows+=`<tr data-hmgroup="${hmGenId}" data-hmparent="${pilarKey}" data-hmlevel="2" style="display:none;"><td class="pilar-name" style="padding-left:40px;font-size:9.5px;font-weight:400;color:#888;">${invHint}${kn}</td>${kcells}</tr>`;
+      });
+    });
+    return empRow+subRows;
   }).join('');
   const heatmapHtml=`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-bottom:12px;border-top:3px solid #0d1b86;" id="sc-heatmap-gen">
-    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(haz clic en una celda para ver el detalle)</span></div>
+    <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Cumplimiento general · mes a mes ${scGenYear} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(clic en empresa ▸ y pilar ▸ para desglosar · clic en celda para detalle)</span></div>
     <table class="heatmap-table">
       <thead><tr><th class="pilar-col">Empresa</th>${allMeses.map(m=>`<th>${m.slice(0,3)}</th>`).join('')}</tr></thead>
       <tbody>${heatmapRows}</tbody>
@@ -2062,6 +2203,46 @@ function plFmtMoney(v,cur,enMillones){
   }
   return neg?`(${s})`:s;
 }
+// Expandir/colapsar filas del P&L. Alterna hijos directos del padre; al colapsar oculta todos los descendientes.
+function plToggle(plId,parentIdx){
+  const filas=Array.from(document.querySelectorAll(`tr[data-plgroup="${plId}"]`));
+  const byIdx={};
+  filas.forEach(f=>{byIdx[+f.getAttribute('data-plrow')]=f;});
+  const padre=byIdx[parentIdx];
+  if(!padre)return;
+  const padreLv=+padre.getAttribute('data-pllevel');
+  // ¿Está actualmente expandido? Miramos si su primer hijo directo está visible
+  let expandido=false;
+  for(const f of filas){
+    if(+f.getAttribute('data-plparent')===parentIdx){
+      expandido=(f.style.display!=='none');
+      break;
+    }
+  }
+  const caret=padre.querySelector('.pl-caret');
+  if(expandido){
+    // Colapsar: ocultar TODOS los descendientes (hijos, nietos...)
+    let i=parentIdx+1;
+    while(byIdx[i] && +byIdx[i].getAttribute('data-pllevel')>padreLv){
+      byIdx[i].style.display='none';
+      const c=byIdx[i].querySelector('.pl-caret');
+      if(c)c.style.transform='';
+      i++;
+    }
+    if(caret)caret.style.transform='';
+  } else {
+    // Expandir: mostrar solo hijos directos (nivel padre+1)
+    let i=parentIdx+1;
+    while(byIdx[i] && +byIdx[i].getAttribute('data-pllevel')>padreLv){
+      if(+byIdx[i].getAttribute('data-plparent')===parentIdx){
+        byIdx[i].style.display='';
+      }
+      i++;
+    }
+    if(caret)caret.style.transform='rotate(90deg)';
+  }
+}
+
 function buildPL(emp){
   let pl=PL_DATA[emp];
   if(!pl)return''; // empresa sin P&L cargado
@@ -2081,28 +2262,62 @@ function buildPL(emp){
   const meses=pl.meses||['Ene','Feb','Mar','Abr'];
   const nCols=1+meses.length*2+2; // concepto + (P,R por mes) + (YTD P,R)
 
-  const rows=pl.rows.map(row=>{
+  // ── Filas con jerarquía colapsable ──
+  // Nivel de profundidad: header/total=0, sub=1, sub2=2
+  function nivelDe(l){return l==='s'?1:(l==='s2'?2:0);}
+  // Determinar para cada fila si tiene hijos (filas siguientes con nivel mayor)
+  const plRows=pl.rows;
+  const plId='pl_'+emp+'_'+(locLabel||'x').replace(/[^a-zA-Z]/g,'');
+  const tieneHijos=plRows.map((row,i)=>{
+    const lv=nivelDe(row.l);
+    const sig=plRows[i+1];
+    return sig && nivelDe(sig.l)>lv;
+  });
+  // Para cada fila, su "padre" es la fila previa de nivel inmediatamente menor
+  const padreDe=plRows.map(()=>-1);
+  for(let i=0;i<plRows.length;i++){
+    const lv=nivelDe(plRows[i].l);
+    if(lv===0){padreDe[i]=-1;continue;}
+    for(let j=i-1;j>=0;j--){
+      if(nivelDe(plRows[j].l)<lv){padreDe[i]=j;break;}
+    }
+  }
+
+  const rows=plRows.map((row,idx)=>{
     const isHeader=row.l==='h';
     const isTotal=row.l==='t';
+    const lv=nivelDe(row.l);
+    const hijos=tieneHijos[idx];
+    const padre=padreDe[idx];
+    // Estado inicial: COLAPSADO -> todo lo que tenga nivel >0 arranca oculto
+    const ocultoInicial=lv>0;
+    const rowAttrs=`data-plrow="${idx}" data-pllevel="${lv}" data-plparent="${padre}" data-plgroup="${plId}"${hijos?` data-plhaschildren="1"`:''}`;
+    const displayStyle=ocultoInicial?'display:none;':'';
+
     if(isHeader){
-      return`<tr><td colspan="${nCols}" style="padding:12px 10px 5px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#0d1b86;font-weight:700;border-bottom:2px solid #eef0f5;">${row.n}</td></tr>`;
+      // Los headers de sección pueden tener toggle si tienen hijos
+      const caret=hijos?`<span class="pl-caret" style="display:inline-block;width:12px;color:#0d1b86;cursor:pointer;transition:transform .15s;">▸</span> `:'';
+      const cursor=hijos?'cursor:pointer;':'';
+      return`<tr ${rowAttrs} style="${displayStyle}"><td colspan="${nCols}" onclick="${hijos?`plToggle('${plId}',${idx})`:''}" style="padding:12px 10px 5px;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#0d1b86;font-weight:700;border-bottom:2px solid #eef0f5;${cursor}">${caret}${row.n}</td></tr>`;
     }
-    const nameStyle=isTotal?'font-size:11.5px;font-weight:700;color:#222;':(row.l==='s2'?'font-size:11px;color:#888;padding-left:34px;':'font-size:11.5px;color:#555;padding-left:16px;');
+    const nameStyle=isTotal?'font-size:11.5px;font-weight:700;color:#222;':(row.l==='s2'?'font-size:11px;color:#888;':'font-size:11.5px;color:#555;');
+    const padLeft=lv===0?0:(lv===1?16:34);
     const valStyle=isTotal?'font-size:11px;font-weight:700;color:#222;':(row.l==='s2'?'font-size:10.5px;color:#888;':'font-size:11px;color:#444;');
     const rowBg=isTotal?'background:#f7f8fa;':'';
     const tb=isTotal?'border-top:1px solid #e0e3e8;':'';
-    // celdas mensuales
     let cells='';
     row.m.forEach((mm,i)=>{
       const sep=i>0?'border-left:1px solid #f3f4f6;':'';
       cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;${sep}">${plFmtMoney(mm.p,cur,enMill)}</td>`;
       cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;">${plFmtMoney(mm.r,cur,enMill)}</td>`;
     });
-    // YTD destacado
     cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;border-left:2px solid #c5d8f8;background:${isTotal?'#eef3fd':'#f7faff'};">${plFmtMoney(row.y.p,cur,enMill)}</td>`;
     cells+=`<td style="padding:6px 8px;text-align:right;${valStyle}${tb}border-bottom:1px solid #f3f4f6;white-space:nowrap;background:${isTotal?'#eef3fd':'#f7faff'};">${plFmtMoney(row.y.r,cur,enMill)}</td>`;
-    return`<tr style="${rowBg}">
-      <td style="padding:6px 10px;${nameStyle}${tb}border-bottom:1px solid #f3f4f6;position:sticky;left:0;background:${isTotal?'#f7f8fa':'#fff'};z-index:1;">${row.n}</td>
+    const caret=hijos?`<span class="pl-caret" style="display:inline-block;width:12px;color:#0d1b86;cursor:pointer;transition:transform .15s;">▸</span>`:`<span style="display:inline-block;width:12px;"></span>`;
+    const cursor=hijos?'cursor:pointer;':'';
+    const onclick=hijos?`onclick="plToggle('${plId}',${idx})"`:'';
+    return`<tr ${rowAttrs} style="${rowBg}${displayStyle}">
+      <td ${onclick} style="padding:6px 10px 6px ${10+padLeft}px;${nameStyle}${tb}border-bottom:1px solid #f3f4f6;position:sticky;left:0;background:${isTotal?'#f7f8fa':'#fff'};z-index:1;${cursor}">${caret} ${row.n}</td>
       ${cells}
     </tr>`;
   }).join('');
@@ -2125,7 +2340,7 @@ function buildPL(emp){
   return`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #0d1b86;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;display:flex;align-items:center;gap:7px;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Estado de Resultados (P&amp;L) · Presupuesto vs Real${locLabel?` · <span style="color:#0d1b86;">${locLabel}</span>`:''}
+        <span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Estado de Resultados (P&amp;L) · Presupuesto vs Real${locLabel?` · <span style="color:#0d1b86;">${locLabel}</span>`:''} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(clic en una fila ▸ para desplegar)</span>
       </div>
       <span style="font-size:11px;color:#0d1b86;background:#eef3fd;border:1px solid #c5d8f8;padding:4px 10px;border-radius:3px;font-weight:600;">${pl.periodo} ${pl.anio||'2026'}</span>
     </div>
@@ -2350,7 +2565,7 @@ function buildScorecard(){
   const amarillo=kpis.filter(v=>v.pct>=80&&v.pct<95).length;
   const rojo=kpis.filter(v=>v.pct<80).length;
   const total=kpis.length;
-  const alertas=Object.entries(agg).filter(([,v])=>v.pct!==null&&v.pct<80).sort((a,b)=>a[1].pct-b[1].pct);
+  const alertas=scKpisRojos3Meses();
 
   let html=`
     <div class="sc-sub-nav">
@@ -2387,7 +2602,7 @@ function buildScorecard(){
     ${radarHtml}
     <div style="background:#fff;border-radius:3px;padding:16px 14px;border-top:3px solid #b62e2e;display:flex;flex-direction:column;overflow:hidden;">
       <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Atención — KPIs bajo target
+        <span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Atención — En rojo últimos 3 meses
       </div>
       <div style="overflow-y:auto;flex:1;">${alertasHtml2}</div>
     </div>
@@ -2763,28 +2978,30 @@ function renderView(view){
         });
         window._hmOutsideClickBound=true;
       }
-      document.querySelectorAll('.hm-cell[data-hmtt]').forEach(function(cell){
-        cell.addEventListener('click',function(e){
-          e.stopPropagation();
-          const wasActive=cell.classList.contains('active');
-          // Limpiar otros activos
-          document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
-          if(wasActive){
-            // Si ya estaba abierta esta misma celda, cerrar
-            hmTtEl.classList.remove('show');
-            return;
-          }
-          try{
-            const raw=cell.getAttribute('data-hmtt').replace(/&apos;/g,"'");
-            const d=JSON.parse(raw);
-            hmTtEl.innerHTML='<button class="hm-tt-close" onclick="document.getElementById(\'sc-hm-tooltip-global\').classList.remove(\'show\');document.querySelectorAll(\'.hm-cell.active\').forEach(c=>c.classList.remove(\'active\'));">×</button>'+hmBuildTooltipHTML(d.title,d.subtitle,d.avgPct,d.kpis,d.groupByPilar);
-            hmTtEl.classList.add('show');
-            cell.classList.add('active');
-            // Posicionar después de que tenga dimensiones reales
-            requestAnimationFrame(()=>hmPositionTooltip(cell));
-          }catch(err){console.error('Heatmap tooltip error:',err);}
+      window.bindHeatmapTooltips=function(){
+        document.querySelectorAll('.hm-cell[data-hmtt]').forEach(function(cell){
+          if(cell._hmBound)return; // evitar doble binding
+          cell._hmBound=true;
+          cell.addEventListener('click',function(e){
+            e.stopPropagation();
+            const wasActive=cell.classList.contains('active');
+            document.querySelectorAll('.hm-cell.active').forEach(c=>c.classList.remove('active'));
+            if(wasActive){
+              hmTtEl.classList.remove('show');
+              return;
+            }
+            try{
+              const raw=cell.getAttribute('data-hmtt').replace(/&apos;/g,"'");
+              const d=JSON.parse(raw);
+              hmTtEl.innerHTML='<button class="hm-tt-close" onclick="document.getElementById(\'sc-hm-tooltip-global\').classList.remove(\'show\');document.querySelectorAll(\'.hm-cell.active\').forEach(c=>c.classList.remove(\'active\'));">×</button>'+hmBuildTooltipHTML(d.title,d.subtitle,d.avgPct,d.kpis,d.groupByPilar);
+              hmTtEl.classList.add('show');
+              cell.classList.add('active');
+              requestAnimationFrame(()=>hmPositionTooltip(cell));
+            }catch(err){console.error('Heatmap tooltip error:',err);}
+          });
         });
-      });
+      };
+      bindHeatmapTooltips();
 
     },20);
     return;
