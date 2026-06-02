@@ -986,6 +986,9 @@ const LINKS_DATA={
     links:[
       {name:'Power BI General — QEMA',url:'https://app.powerbi.com/view?r=eyJrIjoiODM2MzQ0ZTctNDRjZi00M2FmLWFlNGQtMjliYjA5MzYyMDcxIiwidCI6ImQzYWNmZjEwLTU1MzEtNDY1Yy1iM2ZkLTkxODZmMmZhYjVjZiIsImMiOjR9',type:'PowerBI'},
       {name:'Power BI P&L — QEMA',url:'https://app.powerbi.com/view?r=eyJrIjoiODM2MzQ0ZTctNDRjZi00M2FmLWFlNGQtMjliYjA5MzYyMDcxIiwidCI6ImQzYWNmZjEwLTU1MzEtNDY1Yy1iM2ZkLTkxODZmMmZhYjVjZiIsImMiOjR9',type:'PowerBI'},
+      {name:'Dashboard Marketing — QEMA',url:'https://docs.google.com/spreadsheets/d/1uq_kQjt4HbqTz6HVdlvcwTsS9BoYUQrapkMS_b5aFSg/edit?usp=sharing',type:'Sheets'},
+      {name:'Forecast Payroll — QEMA',url:'https://docs.google.com/spreadsheets/d/1lLrPwBA1-vEaKhplDWth1rszjnghCouz/edit?usp=sharing&ouid=115343444472037318840&rtpof=true&sd=true',type:'Sheets'},
+      {name:'Bowling Chart — QEMA',url:'https://docs.google.com/spreadsheets/d/105qa5Rs0Jrd3_LJBClFSuhhVZFoCE2nsTwTP_h0DU-E/edit?usp=sharing',type:'Sheets'},
       {name:'Presupuesto QEMA',url:'https://docs.google.com/spreadsheets/d/1MUfDTE-ZDiEKIDkgRfJb3gt2erJcj9_F/edit?usp=sharing&ouid=107224547883285380552&rtpof=true&sd=true',type:'Sheets'},
       {name:'Directorios QEMA — Acta y presentación',url:'https://www.notion.so/Directorio-Acta-y-presentaci-n-3654c70df57980d6b75fe27dea17b0bd?source=copy_link',type:'Notion'},
       {name:'Brújulas QEMA — Acta',url:'https://www.notion.so/Br-jula-Acta-3654c70df579801c880bf82a30e6579e?source=copy_link',type:'Notion'}
@@ -997,6 +1000,7 @@ const LINKS_DATA={
     icon:'🎓',
     links:[
       {name:'Presupuesto INLOG',url:'https://docs.google.com/spreadsheets/d/13TOkOB_GJCFizOwOqhCo_mZ9SvuDJY03/edit?usp=sharing&ouid=107224547883285380552&rtpof=true&sd=true',type:'Sheets'},
+      {name:'Bowling Chart — INLOG',url:'https://docs.google.com/spreadsheets/d/1NR6xXHWFXom6bjhB8turO9Q1jQLZdRjOapxpFw__UjQ/edit?usp=sharing',type:'Sheets'},
       {name:'Directorios INLOG — Acta y presentación',url:'https://www.notion.so/Directorio-Acta-y-presentaci-n-3654c70df57980f48692cc6b8c8482b7?source=copy_link',type:'Notion'}
     ]
   },
@@ -1006,6 +1010,8 @@ const LINKS_DATA={
     icon:'🛒',
     links:[
       {name:'Presupuesto ARDE',url:'https://docs.google.com/spreadsheets/d/1tw5aGjsTOvkjZW7ddiaNf5jw2RtEgDjZ/edit?usp=sharing&ouid=107224547883285380552&rtpof=true&sd=true',type:'Sheets'},
+      {name:'Bowling Chart — ARDE',url:'https://docs.google.com/spreadsheets/d/1GabfMv_2oZuK-Dzfg4HrFw3V9ONkX-87saNlz8ftTh0/edit?usp=sharing',type:'Sheets'},
+      {name:'CxC ARDE — Cuentas por Cobrar EA',action:"goToCxCArde()",type:'Interno'},
       {name:'Directorios ARDE',url:'https://www.notion.so/ARDE-3654c70df579809c85eee99eda7096f5?source=copy_link',type:'Notion'}
     ]
   },
@@ -1033,6 +1039,7 @@ function linkTypeIcon(type){
   if(type==='Sheets')return'📈';
   if(type==='Docs')return'📄';
   if(type==='Drive')return'📁';
+  if(type==='Interno')return'📊';
   return'🔗';
 }
 function linkTypeBg(type){
@@ -1041,6 +1048,7 @@ function linkTypeBg(type){
   if(type==='Sheets')return{bg:'#e8f5e9',col:'#0f6e40'};
   if(type==='Docs')return{bg:'#e3f2fd',col:'#1565c0'};
   if(type==='Drive')return{bg:'#fef3e0',col:'#8a5a00'};
+  if(type==='Interno')return{bg:'#fdeef0',col:'#b62e2e'};
   return{bg:'#eef3fd',col:'#0d1b86'};
 }
 
@@ -1052,11 +1060,14 @@ function viewLinks(){
     const linksHtml=data.links.length>0
       ?data.links.map(l=>{
         const t=linkTypeBg(l.type);
-        return`<a href="${l.url}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fafafa;border-radius:3px;text-decoration:none;border-left:3px solid ${data.color};transition:background .15s;margin-bottom:7px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fafafa'">
+        const esInterno=!!l.action;
+        const hrefAttr=esInterno?`href="#" onclick="${l.action};return false;"`:`href="${l.url}" target="_blank" rel="noopener noreferrer"`;
+        const subtitulo=esInterno?'Abre la sección de ARDE en el scorecard':`${l.url.replace(/^https?:\/\//,'').slice(0,55)}${l.url.length>55?'...':''}`;
+        return`<a ${hrefAttr} style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fafafa;border-radius:3px;text-decoration:none;border-left:3px solid ${data.color};transition:background .15s;margin-bottom:7px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fafafa'">
           <span style="font-size:18px;flex-shrink:0;">${linkTypeIcon(l.type)}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-size:12px;color:#222;font-weight:600;">${l.name}</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${l.url.replace(/^https?:\/\//,'').slice(0,55)}${l.url.length>55?'...':''}</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">${subtitulo}</div>
           </div>
           <span style="font-size:9px;padding:3px 7px;border-radius:3px;background:${t.bg};color:${t.col};font-weight:700;flex-shrink:0;">${l.type}</span>
           <span style="font-size:14px;color:${data.color};flex-shrink:0;">→</span>
@@ -1213,12 +1224,42 @@ function evoAxisFmt(v,emp,kpi,uFallback){
 }
 
 function kpiUM(emp,kpi){return (KPI_UM[emp]&&KPI_UM[emp][kpi])||null;}
-// KPIs que aunque son montos (money) se AGREGAN POR PROMEDIO, no por suma
-// (tarifas/ratios diarios: ej. ADR = Average Daily Rate, tickets promedio)
-const KPI_PROMEDIO=new Set([
-  'ADR','Ticket Prom EQA Digital','Ticket Prom EQA Masivo','Rev x Guest F&B','Rev x Guest Exp'
-]);
-function kpiUsaPromedio(kpi){return KPI_PROMEDIO.has(kpi);}
+// Método de agregación por KPI cuando hay varios meses: 'sum', 'avg' o 'last' (último periodo con dato)
+// Si un KPI no está listado, se usa el default: money no invertido -> sum, resto -> avg
+const KPI_AGG={
+  SHARF:{
+    'Ingresos Netos':'sum','EBITDA':'sum','Morosidad Local':'last','Morosidad >30d':'last',
+    'SG&A/Ventas':'avg','MB Aduanas':'avg','Ing. Carga Int.':'sum','Margen Bruto Distribución Urbana Perú':'sum',
+    'Prom Paq/Dia FedEx':'last','FedEx Revenue':'sum','NSL DU':'avg','MBG NSL IB FedEx':'avg',
+    'Clima Laboral':'avg','Satisfacción Cliente':'avg'
+  },
+  QEMA:{
+    'Rating Restaurantes':'avg','Rating OTAs':'avg','% Rotación':'avg','Satisfacción clima':'avg',
+    'NPS colaboradores':'avg','Rev x Guest F&B':'avg','ADR':'avg','Revenue':'sum','% Ocupación':'avg',
+    'GOP':'sum','Rev x Guest Exp':'avg','EBITDA':'sum','Payroll/Ingresos':'avg','Reclamos':'sum'
+  },
+  INLOG:{
+    'Alumnos Ed. Continua':'last','Alumnos pregrado':'last','Satisfacción empleados':'avg',
+    'Ingreso Ed. Continua':'sum','Margen bruto':'sum','Ingreso total':'sum','Ingreso Pregrado':'sum',
+    'Ingreso Inhouse':'sum','Vacaciones ejecutadas':'last'
+  },
+  ARDE:{
+    'Utilidad Operativa':'sum','Ticket Prom EQA Masivo':'last','Rev Home B2B':'sum','Revenue Home':'sum',
+    'Máq. alquiladas nuevas EQA':'last','Ticket Prom EQA Digital':'last','Utilidad Bruta':'sum','Revenue EQA':'sum',
+    'Rev Home B2C':'sum','Máq. alquiladas totales EQA':'last','% Máquinas disponibles EQA':'last',
+    'Payroll/Revenue':'avg','% Workplan':'avg','Churn EQA (máq)':'sum','Reclamos por servicio AH':'sum'
+  }
+};
+// Devuelve el método de agregación para un KPI; default según tipo si no está listado
+function kpiAggMethod(emp,kpi,u,inv){
+  const m=KPI_AGG[emp]&&KPI_AGG[emp][kpi];
+  if(m)return m;
+  // Default histórico: dinero no invertido -> suma; resto -> promedio
+  return (u==='money'&&!inv)?'sum':'avg';
+}
+// Símbolo corto del método para los badges
+function aggSym(mode){return mode==='sum'?'Σ':(mode==='last'?'⊙':'⌀');}
+function aggLabel(mode){return mode==='sum'?'suma':(mode==='last'?'último':'prom');}
 // Formatea un valor según la unidad del KPI. uFallback = u original de la celda (para 'auto' o si no hay dicc.)
 function kpiFmt(v,emp,kpi,uFallback){
   if(v===null||v===undefined)return'—';
@@ -1521,31 +1562,31 @@ function scGetAgg(){
     for(const[k,v]of Object.entries(yData[m]||{})){
       if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],reals:[],targets:[],lastT:null,lastR:null,prevR:null};
       const p=scCalcPct(v.t,v.r,v.inv);
-      if(p!==null){
-        if(map[k].lastR!==null)map[k].prevR=map[k].lastR;
-        map[k].pcts.push(p);
-        if(v.r!==null&&v.r!==undefined)map[k].reals.push(v.r);
-        if(v.t!==null&&v.t!==undefined)map[k].targets.push(v.t);
-        map[k].lastT=v.t;map[k].lastR=v.r;
-      } else if(v.t!==null&&v.t!==undefined)map[k].lastT=v.t;
+      // Capturar último real/target del periodo (para método 'last'), aunque no haya pct
+      if(v.r!==null&&v.r!==undefined){if(map[k].lastR!==null)map[k].prevR=map[k].lastR;map[k].lastR=v.r;map[k].reals.push(v.r);}
+      if(v.t!==null&&v.t!==undefined){map[k].lastT=v.t;map[k].targets.push(v.t);}
+      if(p!==null)map[k].pcts.push(p);
     }
   }
-  // Reglas de agregación:
-  //  - KPIs de dinero (money, no invertido): Real/Target = SUMA, y el % se calcula sobre las sumas (coherente con lo mostrado)
-  //  - Resto (%, ratios, scores, num, money invertido): Real/Target = promedio, y el % = promedio de cumplimientos mensuales
+  // Reglas de agregación: cada KPI usa su método definido en KPI_AGG (sum/avg/last).
+  // 'last' = valores del último mes con dato. 'sum' = suma de meses. 'avg' = promedio.
   const res={};
   for(const[k,v]of Object.entries(map)){
-    const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
-    const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
-    const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
-    let pct;
-    if(useSum){
-      // % de cumplimiento basado en las sumas
+    const metodo=kpiAggMethod(scEmp,k,v.u,v.inv);
+    let aggR,aggT,pct;
+    if(metodo==='last'){
+      aggR=v.lastR;aggT=v.lastT;
       pct=scCalcPct(aggT,aggR,v.inv);
-    } else {
+    } else if(metodo==='sum'){
+      aggR=v.reals.length>0?v.reals.reduce((a,b)=>a+b,0):null;
+      aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0):null;
+      pct=scCalcPct(aggT,aggR,v.inv);
+    } else { // avg
+      aggR=v.reals.length>0?v.reals.reduce((a,b)=>a+b,0)/v.reals.length:null;
+      aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0)/v.targets.length:null;
       pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
     }
-    res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
+    res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:metodo};
   }
   return res;
 }
@@ -1585,13 +1626,15 @@ function scKpisRojos3Meses(empKey,locKey,year){
     if(!info.pcts.every(p=>p<80))continue;
     const avgPct=info.pcts.reduce((a,b)=>a+b,0)/info.pcts.length;
     const v=info.meta;
-    const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
+    const metodo=kpiAggMethod(E,k,v.u,v.inv);
     const reals=info.vals.map(x=>x.r).filter(x=>x!==null&&x!==undefined);
     const targets=info.vals.map(x=>x.t).filter(x=>x!==null&&x!==undefined);
-    const aggR=reals.length?(useSum?reals.reduce((a,b)=>a+b,0):reals.reduce((a,b)=>a+b,0)/reals.length):null;
-    const aggT=targets.length?(useSum?targets.reduce((a,b)=>a+b,0):targets.reduce((a,b)=>a+b,0)/targets.length):null;
     const last=info.vals[info.vals.length-1];
-    res.push([k,{pct:avgPct,inv:v.inv,u:v.u,p:v.p,aggR,aggT,nMeses:info.pcts.length,aggMode:useSum?'sum':'avg',lastR:last.r,lastT:last.t}]);
+    let aggR,aggT;
+    if(metodo==='last'){aggR=last.r;aggT=last.t;}
+    else if(metodo==='sum'){aggR=reals.length?reals.reduce((a,b)=>a+b,0):null;aggT=targets.length?targets.reduce((a,b)=>a+b,0):null;}
+    else {aggR=reals.length?reals.reduce((a,b)=>a+b,0)/reals.length:null;aggT=targets.length?targets.reduce((a,b)=>a+b,0)/targets.length:null;}
+    res.push([k,{pct:avgPct,inv:v.inv,u:v.u,p:v.p,aggR,aggT,nMeses:info.pcts.length,aggMode:metodo,lastR:last.r,lastT:last.t}]);
   }
   res.sort((a,b)=>a[1].pct-b[1].pct);
   return res;
@@ -1673,7 +1716,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
         const showAgg=v.nMeses>1&&v.aggR!==null&&v.aggR!==undefined;
         const realV=showAgg?v.aggR:v.lastR;
         const targetV=showAgg?v.aggT:v.lastT;
-        const aggHint=showAgg?`<span style="font-size:9px;color:#999;font-weight:500;margin-left:5px;">${v.aggMode==='sum'?'Σ':'⌀'} ${v.nMeses}m</span>`:'';
+        const aggHint=showAgg?`<span style="font-size:9px;color:#999;font-weight:500;margin-left:5px;" title="${aggLabel(v.aggMode)}">${aggSym(v.aggMode)} ${v.aggMode==='last'?'último':v.nMeses+'m'}</span>`:'';
         const invHint=v.inv?'<span style="font-size:9px;color:#999;margin-right:3px;" title="Menos es mejor">↓</span>':'';
         return`<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;background:#fdeef0;border-radius:3px;margin-bottom:6px;">
           <div style="width:6px;height:6px;border-radius:50%;background:#b62e2e;flex-shrink:0;margin-top:5px;"></div>
@@ -1908,28 +1951,27 @@ function buildScorecardGeneral(){
       for(const[k,v]of Object.entries(yData[m]||{})){
         if(!map[k])map[k]={p:v.p,inv:v.inv,u:v.u,pcts:[],reals:[],targets:[],lastT:null,lastR:null,prevR:null};
         const p=scCalcPct(v.t,v.r,v.inv);
-        if(p!==null){
-          if(map[k].lastR!==null)map[k].prevR=map[k].lastR;
-          map[k].pcts.push(p);
-          if(v.r!==null&&v.r!==undefined)map[k].reals.push(v.r);
-          if(v.t!==null&&v.t!==undefined)map[k].targets.push(v.t);
-          map[k].lastT=v.t;map[k].lastR=v.r;
-        }
-        else if(v.t!==null&&v.t!==undefined)map[k].lastT=v.t;
+        if(v.r!==null&&v.r!==undefined){if(map[k].lastR!==null)map[k].prevR=map[k].lastR;map[k].lastR=v.r;map[k].reals.push(v.r);}
+        if(v.t!==null&&v.t!==undefined){map[k].lastT=v.t;map[k].targets.push(v.t);}
+        if(p!==null)map[k].pcts.push(p);
       }
     }
     const res={};
     for(const[k,v]of Object.entries(map)){
-      const useSum=(v.u==='money'&&!v.inv&&!kpiUsaPromedio(k));
-      const aggR=v.reals.length>0?(useSum?v.reals.reduce((a,b)=>a+b,0):v.reals.reduce((a,b)=>a+b,0)/v.reals.length):null;
-      const aggT=v.targets.length>0?(useSum?v.targets.reduce((a,b)=>a+b,0):v.targets.reduce((a,b)=>a+b,0)/v.targets.length):null;
-      let pct;
-      if(useSum){
+      const metodo=kpiAggMethod(emp,k,v.u,v.inv);
+      let aggR,aggT,pct;
+      if(metodo==='last'){
+        aggR=v.lastR;aggT=v.lastT;pct=scCalcPct(aggT,aggR,v.inv);
+      } else if(metodo==='sum'){
+        aggR=v.reals.length>0?v.reals.reduce((a,b)=>a+b,0):null;
+        aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0):null;
         pct=scCalcPct(aggT,aggR,v.inv);
       } else {
+        aggR=v.reals.length>0?v.reals.reduce((a,b)=>a+b,0)/v.reals.length:null;
+        aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0)/v.targets.length:null;
         pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
       }
-      res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:useSum?'sum':'avg'};
+      res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:metodo};
     }
     return{agg:res,year:scGenYear,meses,yData};
   }
@@ -2651,7 +2693,7 @@ function buildScorecard(){
         const isSingle=v.nMeses===1;
         const delta=isSingle?scFmtDelta(displayT,displayR,v.u,v.inv,scEmp,k):'';
         const trend=isSingle?scFmtTrend(v.lastR,v.prevR,v.inv):'';
-        const aggBadge=showAgg?`<span style="font-size:9px;color:#888;font-weight:500;margin-left:5px;background:#f0f0f0;padding:2px 6px;border-radius:3px;">${v.aggMode==='sum'?'Σ':'⌀'} ${v.nMeses} m</span>`:'';
+        const aggBadge=showAgg?`<span style="font-size:9px;color:#888;font-weight:500;margin-left:5px;background:#f0f0f0;padding:2px 6px;border-radius:3px;" title="${aggLabel(v.aggMode)}">${aggSym(v.aggMode)} ${v.aggMode==='last'?'último':v.nMeses+' m'}</span>`:'';
         const cid='evo-'+k.replace(/[^a-z0-9]/gi,'_')+'-'+scEmp+'-'+scLoc+'-'+scYear;
         const realData=mesesAll.map(m=>yDataAll[m]?.[k]?.r??null);
         const targetData=mesesAll.map(m=>yDataAll[m]?.[k]?.t??null);
@@ -2838,7 +2880,7 @@ function renderView(view){
               rows=d.kpis.map(function(k){
                 const kcol=COLS_TT[k.cls];
                 const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';
-                const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${k.aggMode==='sum'?'Σ':'⌀'} ${k.nMeses}m)</span>`:'';
+                const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${aggSym(k.aggMode)} ${k.aggMode==='last'?'último':k.nMeses+'m'})</span>`:'';
                 const invHint=k.inv?`<span style="font-size:9px;color:#999;" title="Menos es mejor">↓</span>`:'';
                 return`<div style="padding:5px 0;border-bottom:1px solid #f5f5f5;">
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px;">
@@ -2902,7 +2944,7 @@ function renderView(view){
             else{rows=d.kpis.map(function(k){
               const kcol=COLS2[k.cls];
               const pctTxt=k.pct!==null?Math.round(k.pct)+'%':'—';
-              const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${k.aggMode==='sum'?'Σ':'⌀'} ${k.nMeses}m)</span>`:'';
+              const aggHint=k.nMeses>1?` <span style="font-size:9px;color:#aaa;">(${aggSym(k.aggMode)} ${k.aggMode==='last'?'último':k.nMeses+'m'})</span>`:'';
               const invHint=k.inv?`<span style="font-size:9px;color:#999;" title="Menos es mejor">↓</span>`:'';
               return`<div style="padding:5px 0;border-bottom:1px solid #f5f5f5;">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px;">
@@ -3006,6 +3048,34 @@ function renderView(view){
     },20);
     return;
   }
+}
+
+// Navega al scorecard de ARDE y hace scroll al bloque de CxC
+function goToCxCArde(){
+  scEmp='ARDE';
+  if(typeof scYear!=='undefined'){
+    // asegurar año con datos de ARDE (2026)
+    if(SC_EMPRESAS.ARDE&&SC_EMPRESAS.ARDE.years&&SC_EMPRESAS.ARDE.years[2026])scYear=2026;
+  }
+  // Activar el pill de Scorecard en el nav
+  document.querySelectorAll('.nav-pill').forEach(p=>{
+    p.classList.remove('active');
+    if(/scorecard|kpi/i.test(p.textContent))p.classList.add('active');
+  });
+  renderView('scorecard');
+  // Scroll al bloque de CxC tras el render
+  setTimeout(()=>{
+    const bloques=document.querySelectorAll('div');
+    let target=null;
+    document.querySelectorAll('div').forEach(d=>{
+      if(!target && /Cuentas por Cobrar · EA Clientes/.test(d.textContent) && d.querySelector('table')){
+        // el contenedor más cercano
+      }
+    });
+    // Buscar por el encabezado del CxC
+    const headers=Array.from(document.querySelectorAll('div')).filter(d=>d.textContent.trim().startsWith('Cuentas por Cobrar')&&d.children.length<=2);
+    if(headers.length){headers[0].scrollIntoView({behavior:'smooth',block:'start'});}
+  },120);
 }
 
 function switchView(view,el){
