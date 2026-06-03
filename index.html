@@ -1467,6 +1467,7 @@ function scToggleGenMes(m){
 }
 function scSelectAllMeses(){scMes=[];renderView('scorecard');}
 function scSelectAllGenMeses(){scGenMes=[];renderView('scorecard');}
+function scScrollTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 function scClearMeses(){scMes=[];renderView('scorecard');}
 function scClearGenMeses(){scGenMes=[];renderView('scorecard');}
 function scToggleMesPanel(id){
@@ -2410,7 +2411,7 @@ function buildPL(emp){
   });
   hdr2+=`<th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#0d1b86;font-weight:600;border-left:2px solid #c5d8f8;background:#eef3fd;">Ppto</th><th style="padding:2px 8px 8px;text-align:right;font-size:9px;color:#0d1b86;font-weight:600;background:#eef3fd;">Real</th>`;
 
-  return`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #0d1b86;">
+  return`<div id="sc-pl-block" style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #0d1b86;scroll-margin-top:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;display:flex;align-items:center;gap:7px;">
         <span style="width:7px;height:7px;border-radius:50%;background:#0d1b86;display:inline-block;"></span>Estado de Resultados (P&amp;L) · Presupuesto vs Real${locLabel?` · <span style="color:#0d1b86;">${locLabel}</span>`:''} <span style="font-weight:400;color:#bbb;margin-left:6px;font-size:9px;text-transform:none;letter-spacing:0;">(clic en una fila ▸ para desplegar)</span>
@@ -2514,7 +2515,7 @@ function buildCxC(emp){
     </tr>`;
   }).join('');
 
-  return`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #b62e2e;">
+  return`<div id="sc-cxc-block" style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #b62e2e;scroll-margin-top:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
       <div style="font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#aaa;font-weight:600;display:flex;align-items:center;gap:7px;">
         <span style="width:7px;height:7px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Cuentas por Cobrar · EA Clientes
@@ -2556,7 +2557,7 @@ function buildPowerBI(emp){
   if(scLoc&&scLoc!=='consolidado')return'';
   const url=POWERBI_URL[emp];
   if(!url)return'';
-  return`<div style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #F2C811;">
+  return`<div id="sc-powerbi-block" style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #F2C811;scroll-margin-top:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:11px;">
         <div style="width:34px;height:34px;border-radius:6px;background:#F2C811;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -2609,6 +2610,35 @@ function closePowerBI(){
   const modal=document.getElementById('pbi-modal');
   if(modal){modal.style.display='none';modal.innerHTML='';}
   document.body.style.overflow='';
+}
+
+// Barra de acceso rápido: botones que hacen scroll a P&L / Dashboard / CxC según la empresa
+function scBuildQuickNav(emp){
+  const btns=[];
+  const tienePL=!!PL_DATA[emp];
+  // Botón P&L (todas las empresas con P&L cargado)
+  if(tienePL){
+    btns.push(`<div onclick="scScrollTo('sc-pl-block')" title="Ir al P&L" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #0d1b86;background:#fff;color:#0d1b86;transition:all .15s;" onmouseover="this.style.background='#0d1b86';this.style.color='#fff';" onmouseout="this.style.background='#fff';this.style.color='#0d1b86';">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4h6M4 4v6M4 4l7 7M20 20h-6M20 20v-6M20 20l-7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>P&L
+    </div>`);
+  }
+  // Botón Dashboard Power BI (solo QEMA consolidado)
+  if(emp==='QEMA'&&(scLoc==='consolidado')&&POWERBI_URL[emp]){
+    btns.push(`<div onclick="scScrollTo('sc-powerbi-block')" title="Ir al Dashboard Power BI" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #d97706;background:#fff;color:#b8820a;transition:all .15s;" onmouseover="this.style.background='#F2C811';this.style.color='#000';this.style.borderColor='#F2C811';" onmouseout="this.style.background='#fff';this.style.color='#b8820a';this.style.borderColor='#d97706';">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="6" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="17" rx="1" fill="currentColor"/></svg>Dashboard
+    </div>`);
+  }
+  // Botón Cuentas x Cobrar (solo ARDE)
+  if(emp==='ARDE'&&typeof CXC_ARDE!=='undefined'&&CXC_ARDE){
+    btns.push(`<div onclick="scScrollTo('sc-cxc-block')" title="Ir a Cuentas por Cobrar" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 14px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid #b62e2e;background:#fff;color:#b62e2e;transition:all .15s;" onmouseover="this.style.background='#b62e2e';this.style.color='#fff';" onmouseout="this.style.background='#fff';this.style.color='#b62e2e';">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Cuentas x Cobrar
+    </div>`);
+  }
+  if(btns.length===0)return'';
+  return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+    <span class="sc-filter-label">Ir a</span>
+    ${btns.join('')}
+  </div>`;
 }
 
 function buildScorecard(){
@@ -2667,6 +2697,7 @@ function buildScorecard(){
       <div onclick="scSetLoc('mancora')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='mancora'?'#4586e4':'#e0e0e0'};background:${scLoc==='mancora'?'#4586e4':'#fff'};color:${scLoc==='mancora'?'#fff':'#555'};">Máncora</div>
       <div onclick="scSetLoc('lima')" style="font-size:11px;padding:5px 14px;border-radius:20px;cursor:pointer;font-weight:500;border:1px solid ${scLoc==='lima'?'#2EC4A0':'#e0e0e0'};background:${scLoc==='lima'?'#2EC4A0':'#fff'};color:${scLoc==='lima'?'#fff':'#555'};">Lima</div>
     </div>`:''}
+    ${scBuildQuickNav(scEmp)}
 `;
 
   const {radarHtml,alertasHtml2}=buildRadarAlertasSplit(agg,scEmp,alertas,periodo);
