@@ -1317,6 +1317,26 @@ function kpiAggMethod(emp,kpi,u,inv){
 // Símbolo corto del método para los badges
 function aggSym(mode){return mode==='sum'?'Σ':(mode==='last'?'⊙':'⌀');}
 function aggLabel(mode){return mode==='sum'?'suma':(mode==='last'?'último':'prom');}
+
+// PESO de cada KPI para el cálculo del % de desempeño POR PILAR (promedio ponderado).
+// Si una empresa o KPI no está listado, peso = 1 (promedio simple).
+// Fuente: columna "Peso" del bowling chart de cada empresa.
+const KPI_PESO={
+  SHARF:{
+    'Ingresos Netos':3,'EBITDA':3,'MB Aduanas':2,'Ing. Carga Int.':2,
+    'Margen Bruto Distribución Urbana Perú':2,'FedEx Revenue':2,
+    'Morosidad Local':3,'Morosidad >30d':2,'SG&A/Ventas':3,
+    'Prom Paq/Dia FedEx':3,'NSL DU':3,'MBG NSL IB FedEx':3,
+    'Clima Laboral':3,'Satisfacción Cliente':3
+  }
+};
+function kpiPeso(emp,kpi){return (KPI_PESO[emp]&&KPI_PESO[emp][kpi])||1;}
+// Promedio ponderado de cumplimientos: recibe pares [kpiName, pct] (pct no nulo)
+function pctPonderado(emp,pares){
+  let sw=0,swp=0;
+  for(const[k,p]of pares){const w=kpiPeso(emp,k);sw+=w;swp+=w*p;}
+  return sw>0?swp/sw:null;
+}
 // Formatea un valor según la unidad del KPI. uFallback = u original de la celda (para 'auto' o si no hay dicc.)
 function kpiFmt(v,emp,kpi,uFallback){
   if(v===null||v===undefined)return'—';
@@ -1709,7 +1729,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
     if(pilar==='Impacto')return{pilar,pct:null,cls:'gr',kpis:[]};
     const kpis=Object.entries(aggData).filter(([,v])=>v.p===pilar);
     const withData=kpis.filter(([,v])=>v.pct!==null);
-    const avg=withData.length>0?withData.reduce((s,[,v])=>s+v.pct,0)/withData.length:null;
+    const avg=pctPonderado(empName,withData.map(([k,v])=>[k,v.pct]));
     return{pilar,pct:avg,cls:sem(avg),kpis};
   });
 
@@ -1934,8 +1954,8 @@ function buildHeatmap(emp,year){
     const cells=meses.map(m=>{
       const mesData=yData[m]||{};
       const kpisP=Object.entries(mesData).filter(([,v])=>v.p===pilar);
-      const pcts=kpisP.map(([,v])=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
-      const avg=pcts.length>0?pcts.reduce((a,b)=>a+b,0)/pcts.length:null;
+      const pares=kpisP.map(([k,v])=>[k,scCalcPct(v.t,v.r,v.inv)]).filter(([,p])=>p!==null);
+      const avg=pctPonderado(emp,pares);
       const cls=hmCls(avg);
       const kpisInfo=kpisP.map(([k,v])=>({
         name:k,real:kpiFmt(v.r,emp,k,v.u),target:kpiFmt(v.t,emp,k,v.u),
@@ -2225,8 +2245,8 @@ function buildScorecardGeneral(){
       const pilarCells=allMeses.map(m=>{
         const mesData=yData[m]||{};
         const kpisP=Object.entries(mesData).filter(([,v])=>v.p===pilar);
-        const pcts=kpisP.map(([,v])=>scCalcPct(v.t,v.r,v.inv)).filter(p=>p!==null);
-        const avg=pcts.length>0?pcts.reduce((a,b)=>a+b,0)/pcts.length:null;
+        const pares=kpisP.map(([k,v])=>[k,scCalcPct(v.t,v.r,v.inv)]).filter(([,p])=>p!==null);
+        const avg=pctPonderado(emp,pares);
         if(kpisP.length===0)return`<td><span class="hm-cell hm-gr" style="opacity:.5;">·</span></td>`;
         const kpisInfo=kpisP.map(([k,v])=>({name:k,real:kpiFmt(v.r,emp,k,v.u),target:kpiFmt(v.t,emp,k,v.u),pct:scCalcPct(v.t,v.r,v.inv),inv:!!v.inv,u:v.u}));
         const ttData=JSON.stringify({title:`${SC_PILARES_ICON[pilar]} ${pilar}`,subtitle:`${emp} · ${m} ${scGenYear}`,avgPct:avg,kpis:kpisInfo}).replace(/'/g,"&apos;");
