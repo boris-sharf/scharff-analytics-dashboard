@@ -1385,6 +1385,20 @@ function aggLabel(mode){return mode==='sum'?'suma':(mode==='last'?'último':'pro
 // Si una empresa o KPI no está listado, peso = 1 (promedio simple).
 // Fuente: columna "Peso" del bowling chart de cada empresa.
 const KPI_PESO={
+  QEMA:{
+    'Rating OTAs':1,'Rating Restaurantes':1,
+    'Satisfacción clima':1,'NPS colaboradores':1,'% Rotación':1,
+    'Revenue':3,'Rev x Guest F&B':1,'Rev x Guest Exp':1,'ADR':2,'% Ocupación':2,'GOP':3,'EBITDA':3,
+    'Reclamos':1,'Payroll/Ingresos':2
+  },
+  ARDE:{
+    'Revenue EQA':3,'Máq. alquiladas nuevas EQA':2,'Máq. alquiladas totales EQA':1,
+    'Ticket Prom EQA Digital':1,'Ticket Prom EQA Masivo':1,
+    'Revenue Home':3,'Rev Home B2C':2,'Rev Home B2B':2,
+    'Utilidad Bruta':2,'Utilidad Operativa':3,'% Máquinas disponibles EQA':1,
+    'Churn EQA (máq)':1,'Reclamos por servicio AH':1,'Payroll/Revenue':1,'% Workplan':1,
+    'Clima Laboral':1
+  },
   SHARF:{
     'Ingresos Netos':3,'EBITDA':3,'MB Aduanas':2,'Ing. Carga Int.':2,
     'Margen Bruto Distribución Urbana Perú':2,'FedEx Revenue':2,
