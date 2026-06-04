@@ -348,8 +348,11 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 
 <script>
 const PRESET_DB='61389aef59004c0d8ae6285e6c1d7db4';
+// BBDDs adicionales de Notion (hijas de Control de Gestión — La Rama Holding)
+const DB_EQUIPO='3734c70df57980f88196ed331d4e6a47';   // Pendientes Específicos - Equipo Holding → se integra a vista Recurrentes
+const DB_LIDERES='3654c70df579804c864bf892bd8eab3a';  // Pendientes líderes Holding → alimenta vista Específicos
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let TOKEN='',DB_ID=PRESET_DB,TASKS=[],activeCharts=[];
+let TOKEN='',DB_ID=PRESET_DB,TASKS=[],TASKS_EQUIPO=[],TASKS_LIDERES=[],activeCharts=[];
 const RECURRENTES = [{"tarea": "Podio de Brújula", "asignado": "Boris Chavez", "deadline": "2026-06-19", "empresa": "QEMA", "estado": "✅ Entregado", "fechaReal": "2026-05-08", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Cierre WPs ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-07", "empresa": "ARDE", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Integraciones Marketing", "asignado": "Boris Chavez", "deadline": "2026-05-08", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-08", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Encuestas", "asignado": "Boris Chavez", "deadline": "2026-05-14", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-14", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Reporte Guest Revu", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-20", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Reporte Linkedin ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-28", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Boletín mensual ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-01", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Brújula qema", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "qema en Punto", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Premiación fuegos del trimestre", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Celebración día del padre", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integracion Máncora", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integración Lima", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Integración Arequipa", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-13", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Encuesta clima laboral Q2", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-06", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Reporte clima laboral Q2", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-20", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Inicio evaluación de desempeño Q3", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-07-01", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Evaluación desempeño Q3 lista", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-26", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Aniversario qema ", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Acta directorio", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-29", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta brújula", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-19", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Directorio qema", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-26", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "On track Inlog", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-29", "empresa": "INLOG", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Comite cultura", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Café sin guion Inlog", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-12", "empresa": "INLOG", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Directorio qema", "asignado": "", "deadline": "2026-06-15", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": ""}, {"tarea": "Acta directorio", "asignado": "", "deadline": "2026-06-19", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "Brujula qema", "asignado": "", "deadline": "2026-06-12", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Acta brujula qema", "asignado": "", "deadline": "2026-06-16", "empresa": "QEMA", "estado": "", "fechaReal": null, "frecuencia": "", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "P&L Inversiones Fuego", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "ARDE", "estado": "🔄 En progreso", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-15", "empresa": "INLOG", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L Sharf", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "SHARF", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "P&L Qema", "asignado": "Boris Chavez", "deadline": "2026-05-15", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Directorio Sharf", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Mandar Factura Calle B (SGS)", "asignado": "ANDREA CALDAS", "deadline": "2026-05-07", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de alquiler Calle B (SGS)", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de préstamos banco Calle B", "asignado": "ANDREA CALDAS", "deadline": "2026-05-28", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-28", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Mandar Factura Cedros (SLI)", "asignado": "ANDREA CALDAS", "deadline": "2026-05-07", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-07", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de alquiler Cedros (SLI)", "asignado": "ANDREA CALDAS", "deadline": "2026-06-21", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-21", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago de préstamos banco Cedros", "asignado": "ANDREA CALDAS", "deadline": "2026-05-28", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-28", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - NMN", "asignado": "ANDREA CALDAS", "deadline": "2026-05-15", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-15", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Franquicias", "asignado": "ANDREA CALDAS", "deadline": "2026-05-04", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-04", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Vertical", "asignado": "ANDREA CALDAS", "deadline": "2026-05-24", "empresa": "INMUEBLES", "estado": "🔄 En progreso", "fechaReal": "2026-05-24", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - UIB", "asignado": "ANDREA CALDAS", "deadline": "2026-05-13", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-13", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Pago alquiler La Mar - Ref Master", "asignado": "ANDREA CALDAS", "deadline": "2026-05-12", "empresa": "INMUEBLES", "estado": "✅ Entregado", "fechaReal": "2026-05-12", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Factura a  LA RAMA a SLI", "asignado": "ANDREA CALDAS", "deadline": "2026-05-14", "empresa": "LA RAMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-14", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Pago a La Mamina", "asignado": "ANDREA CALDAS", "deadline": "2026-05-05", "empresa": "LA RAMA", "estado": "🔄 En progreso", "fechaReal": "2026-05-05", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Power BI Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-26", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-26", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Valor"}, {"tarea": "Proyección Lucro Cesante Mancora", "asignado": "Boris Chavez", "deadline": "2026-05-29", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-29", "frecuencia": "Única", "esRecurrente": "No", "link": "", "pilar": "Salud"}, {"tarea": "Encuestas Módulo 1 Pregrado", "asignado": "Boris Chavez", "deadline": "2026-05-29", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-29", "frecuencia": "Trimestral", "esRecurrente": "No", "link": "", "pilar": "Cliente Feliz"}, {"tarea": "Bowling Chart Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-26", "empresa": "INLOG", "estado": "🔄 En progreso", "fechaReal": "2026-05-26", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Salud"}, {"tarea": "Acta Directorio ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-06-01", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Acta Directorio Inlog", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-06-01", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Feedback Brújula QEMA", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Equipo Feliz"}, {"tarea": "Cierre WPs ARDE - Nuevo Q", "asignado": "Boris Chavez", "deadline": "2026-06-26", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-06-30", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": "Salud"}, {"tarea": "Comisiones ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": "Valor"}, {"tarea": "Reporte Auditoría IA Pregrado", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Reporte Auditoría IA EC", "asignado": "Boris Chavez", "deadline": "2026-05-25", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-25", "frecuencia": "Semanal", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral Staff", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral Docente", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Encuesta de Clima Laboral ARDE", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-07-03", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta Cómo Vamos ARDE", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Acta Cómo Vamos INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Podio Cómo Vamos INLOG", "asignado": "Boris Chavez", "deadline": "2026-05-22", "empresa": "INLOG", "estado": "📥 Backlog", "fechaReal": "2026-05-22", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Cierre WPs ARDE - Actual Q", "asignado": "Boris Chavez", "deadline": "2026-07-01", "empresa": "ARDE", "estado": "📥 Backlog", "fechaReal": "2026-07-06", "frecuencia": "Trimestral", "esRecurrente": "Yes", "link": "", "pilar": ""}, {"tarea": "Reporte ADR/Revenue/Ocupacion x Tarifa/Habitacion", "asignado": "Boris Chavez", "deadline": "2026-05-11", "empresa": "QEMA", "estado": "📥 Backlog", "fechaReal": "2026-05-11", "frecuencia": "Mensual", "esRecurrente": "Yes", "link": "", "pilar": ""}];
 const ESPECIFICOS = [{"tarea": "Realizar el ejercicio de agentización (plantilla Claude enviado en el correo anterior) para todas las posiciones de Arde ", "responsable": "Alejandro", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-05-15", "empresa": "ARDE", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Incluir proveedores tercerizados (revenue management, agencias de pauta y contenido) en el ejercicio de agentización", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Prescindir de terceros de marketing e internalizar con IA — coordinar con Alejandro y Gabriela una reu", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Implementar HubSpot para el equipo comercial", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Agentizar roles 100% automatizables en el resultado del ejercicio ", "responsable": "Dragan", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-08-11", "empresa": "QEMA", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Presentar plan detallado de la implementación de agentización (áreas, posiciones, timing, cronograma) ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Sincerar guías de puesto (funciones reales vs. documentadas) antes de subir info al ejercicio", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Mapeo de la Segunda Ola: Comercial Sharf, FedEx y áreas administrativas complementarias ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Presentar plan detallado de la Primera Ola (áreas, posiciones, timing, cronorama) ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-06-09", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}, {"tarea": "Ejecutar la Primera Ola de agentización ", "responsable": "Fochi y Margie", "fuente": "Comité cultura Mayo", "asignado": "Kiara Cornejo Péndola", "deadline": "2026-08-11", "empresa": "SHARF", "estado": "🔄 En progreso", "fechaReal": null, "link": "", "pilar": ""}];
 let calY,calM,currentView='scorecard';
@@ -382,6 +385,22 @@ function resetConfig(){
   document.getElementById('cfg-btn').disabled=false;
 }
 
+// Consulta una BBDD de Notion con paginación; devuelve array de pages
+async function notionQueryAll(dbId){
+  const results=[];let cursor=null;
+  do{
+    const body={page_size:100};if(cursor)body.start_cursor=cursor;
+    const notionUrl=`https://api.notion.com/v1/databases/${dbId}/query`;
+    const proxyUrl=`https://corsproxy.io/?url=${encodeURIComponent(notionUrl)}`;
+    const res=await fetch(proxyUrl,{method:'POST',headers:{'Authorization':`Bearer ${TOKEN}`,'Notion-Version':'2022-06-28','Content-Type':'application/json','x-requested-with':'XMLHttpRequest'},body:JSON.stringify(body)});
+    if(!res.ok){const err=new Error(`HTTP ${res.status}`);err.status=res.status;throw err;}
+    const data=await res.json();
+    results.push(...data.results);
+    cursor=data.has_more?data.next_cursor:null;
+  }while(cursor);
+  return results;
+}
+const notionEmpresa=r=>(r['Empresa']?.select?.name||'—').replace(/[^A-Za-z ]/g,'').trim()||'—';
 async function loadData(){
   if(!TOKEN){const s=localStorage.getItem('sh_token');if(s)TOKEN=s;else{resetConfig();return;}}
   if(!DB_ID){const s=localStorage.getItem('sh_dbid');if(s)DB_ID=s;else DB_ID=PRESET_DB;}
@@ -389,25 +408,15 @@ async function loadData(){
   document.getElementById('dashboard').style.display='block';
   document.getElementById('body').innerHTML='<div class="loading"><div class="spinner"></div><div class="loading-text">Cargando datos desde Notion...</div></div>';
   try{
-    const results=[];let cursor=null;
-    do{
-      const body={page_size:100};if(cursor)body.start_cursor=cursor;
-      const notionUrl=`https://api.notion.com/v1/databases/${DB_ID}/query`;
-      const proxyUrl=`https://corsproxy.io/?url=${encodeURIComponent(notionUrl)}`;
-      const res=await fetch(proxyUrl,{method:'POST',headers:{'Authorization':`Bearer ${TOKEN}`,'Notion-Version':'2022-06-28','Content-Type':'application/json','x-requested-with':'XMLHttpRequest'},body:JSON.stringify(body)});
-      if(res.status===401){showErr('Token inválido o sin acceso a la BD.');resetConfig();return;}
-      if(!res.ok)throw new Error(`HTTP ${res.status}`);
-      const data=await res.json();
-      results.push(...data.results);
-      cursor=data.has_more?data.next_cursor:null;
-    }while(cursor);
+    // 1) Recurrentes (BBDD principal): si falla, se muestra el error como siempre
+    const results=await notionQueryAll(DB_ID);
     TASKS=results.map(p=>{
       const r=p.properties;
       const asignadoArr=r['Asignado a']?.people||[];
       return{
         id:p.id,
         tarea:r['Tareas']?.title?.[0]?.plain_text||'(sin nombre)',
-        empresa:(r['Empresa']?.select?.name||'—').replace(/[^A-Za-z ]/g,'').trim()||'—',
+        empresa:notionEmpresa(r),
         estado:String(r['Estado']?.select?.name||''),
         asignado:asignadoArr[0]?.name||'—',
         deadline:r['Deadline']?.date?.start||'',
@@ -418,8 +427,55 @@ async function loadData(){
         link:r['Link entregable']?.url||'',
       };
     });
+    // 2) Pendientes Específicos - Equipo Holding → se suma a la vista Recurrentes.
+    //    Si la integración aún no tiene acceso (404/403), se ignora sin romper el dashboard.
+    try{
+      const resEq=await notionQueryAll(DB_EQUIPO);
+      TASKS_EQUIPO=resEq.map(p=>{
+        const r=p.properties;
+        const respArr=r['Responsable']?.people||[];
+        return{
+          id:p.id,
+          tarea:r['Tareas']?.title?.[0]?.plain_text||'(sin nombre)',
+          empresa:notionEmpresa(r),
+          estado:String(r['Estado']?.select?.name||''),
+          asignado:respArr[0]?.name||'—',
+          deadline:r['Deadline']?.date?.start||'',
+          fechaReal:r['Fecha entrega real']?.date?.start||null,
+          fechaSolicitud:r['Fecha Solicitud']?.date?.start||null,
+          frecuencia:'Específico',
+          esRecurrente:'No',
+          pilar:r['Pilar']?.select?.name||'',
+          link:r['Link entregable']?.url||'',
+          origen:'equipo',
+        };
+      });
+    }catch(e){TASKS_EQUIPO=[];console.warn('Pendientes Equipo no disponible:',e.message);}
+    // 3) Pendientes líderes Holding → alimenta la vista Específicos (en vivo).
+    try{
+      const resLid=await notionQueryAll(DB_LIDERES);
+      TASKS_LIDERES=resLid.map(p=>{
+        const r=p.properties;
+        const segArr=r['Asignado de seguimiento']?.people||[];
+        return{
+          id:p.id,
+          tarea:r['Tareas']?.title?.[0]?.plain_text||'(sin nombre)',
+          responsable:r['Responsable']?.rich_text?.[0]?.plain_text||'—',
+          fuente:r['Fuente']?.rich_text?.[0]?.plain_text||'Sin fuente',
+          asignado:segArr[0]?.name||'—',
+          empresa:notionEmpresa(r),
+          estado:String(r['Estado']?.select?.name||''),
+          deadline:r['Deadline']?.date?.start||'',
+          fechaReal:r['Fecha entrega real']?.date?.start||null,
+          fechaReunion:r['Fecha Reunión']?.date?.start||null,
+          pilar:r['Pilar']?.select?.name||'',
+          link:r['Link entregable']?.url||'',
+        };
+      });
+    }catch(e){TASKS_LIDERES=[];console.warn('Pendientes Líderes no disponible:',e.message);}
     renderView(currentView);
   }catch(e){
+    if(e.status===401){showErr('Token inválido o sin acceso a la BD.');resetConfig();return;}
     document.getElementById('body').innerHTML=`<div class="err-box"><strong>Error al conectar con Notion:</strong> ${e.message}.<br>Verifica tu token y que la integración esté conectada a la base de datos.</div>`;
   }
 }
@@ -808,11 +864,13 @@ function pendBuildProximosVencer(items){
 
 // ─────────────── VISTA: RECURRENTES (con tabla próximos a vencer) ───────────────
 function viewRecurrentes(){
-  setBanner('Pendientes Recurrentes','Tareas recurrentes del equipo');
+  setBanner('Pendientes Recurrentes','Tareas recurrentes y específicas del equipo');
   pendFilters.tipo='all';
-  // Usar datos EN VIVO de Notion (TASKS); si está vacío, caer al hardcodeado de respaldo
+  // Usar datos EN VIVO de Notion (TASKS); si está vacío, caer al hardcodeado de respaldo.
+  // Se suman los Pendientes Específicos del Equipo Holding (BBDD aparte, frecuencia "Específico").
   const fuente=(Array.isArray(TASKS)&&TASKS.length>0)?TASKS:RECURRENTES;
-  const allRecs=fuente.map(r=>pendNorm(r,'rec'));
+  const combinado=fuente.concat(Array.isArray(TASKS_EQUIPO)?TASKS_EQUIPO:[]);
+  const allRecs=combinado.map(r=>pendNorm(r,'rec'));
   const filtered=pendApplyFilters(allRecs);
   const noEntregados=filtered.filter(t=>!t.estado.includes('Entregado'));
 
@@ -854,9 +912,11 @@ function viewRecurrentes(){
 
 // ─────────────── NEW: VISTA ESPECÍFICOS visual (cards agrupadas por fuente) ───────────────
 function viewEspecificos(){
-  setBanner('Pendientes Específicos','Tareas que salen de reuniones por empresa');
+  setBanner('Pendientes Específicos','Pendientes con líderes de las empresas');
   pendFilters.tipo='all';
-  const allEsps=ESPECIFICOS.map(e=>pendNorm(e,'esp'));
+  // Datos EN VIVO de Notion (Pendientes líderes Holding); fallback al hardcodeado si no hay acceso
+  const fuenteEsp=(Array.isArray(TASKS_LIDERES)&&TASKS_LIDERES.length>0)?TASKS_LIDERES:ESPECIFICOS;
+  const allEsps=fuenteEsp.map(e=>pendNorm(e,'esp'));
   const filtered=pendApplyFilters(allEsps);
 
   // Agrupar por fuente
@@ -1300,6 +1360,9 @@ const KPI_AGG={
     'Ingreso Ed. Continua':'sum','Margen bruto':'sum','Ingreso total':'sum','Ingreso Pregrado':'sum',
     'Ingreso Inhouse':'sum','Vacaciones ejecutadas':'last'
   },
+  INMUEBLES:{
+    'Incidencias':'sum','Pagos fuera del mes':'sum'
+  },
   ARDE:{
     'Utilidad Operativa':'sum','Ticket Prom EQA Masivo':'last','Rev Home B2B':'sum','Revenue Home':'sum',
     'Máq. alquiladas nuevas EQA':'last','Ticket Prom EQA Digital':'last','Utilidad Bruta':'sum','Revenue EQA':'sum',
@@ -1475,10 +1538,10 @@ const SC_EMPRESAS={
   }},
   INMUEBLES:{label:'INMUEBLES — Real Estate',years:{
     2026:{
-      Enero:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Satisfacción inquilino':{t:80,r:80,p:'Cliente Feliz',u:'pct'},'Pago Mamina dentro fecha':{t:100,r:100,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175156,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151245,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      Enero:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Pago Mamina dentro fecha':{t:100,r:100,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175156,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151245,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
       Febrero:{'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:176926,r:175260,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:151560,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
-      Marzo:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:182233,r:182662,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:153360,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
-      Abril:{'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:1,p:'Salud',u:'num',inv:true}},
+      Marzo:{'Renovación contratos':{t:1,r:1,p:'Cliente Feliz',u:'num'},'Satisfacción inquilino':{t:80,r:null,p:'Cliente Feliz',u:'pct'},'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:182233,r:182662,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:153360,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:0,p:'Salud',u:'num',inv:true}},
+      Abril:{'Pago Mamina dentro fecha':{t:100,r:0,p:'Equipo Feliz',u:'pct'},'Ingreso Cedros':{t:182233,r:184859,p:'Valor',u:'money'},'Ingreso Calle B':{t:153000,r:156015,p:'Valor',u:'money'},'Pagos fuera del mes':{t:0,r:0,p:'Salud',u:'num',inv:true},'Incidencias':{t:0,r:1,p:'Salud',u:'num',inv:true}},
     }
   }}
 };
@@ -2646,7 +2709,12 @@ function buildSharfPLEmbed(){
       ?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="4" height="9" rx="1" fill="currentColor"/><rect x="10" y="6" width="4" height="14" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="17" rx="1" fill="currentColor"/></svg>`
       :`<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9s1.3-6.4 3.8-9z" stroke="currentColor" stroke-width="2"/></svg>`;
     const urlEsc=r.url.replace(/'/g,"\\'");
-    return`<div onclick="openEmbed('SHARF · ${r.name.replace(/'/g,"\\'")}','${urlEsc}','${r.tipo}')" title="Abrir ${r.name}" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 13px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${border};background:#fff;color:${col};transition:all .15s;" onmouseover="this.style.background='${hoverBg}';this.style.color='${hoverCol}';" onmouseout="this.style.background='#fff';this.style.color='${col}';">${icon}${r.name}</div>`;
+    const inner=`${icon}${r.name}${esPBI?'':' ↗'}`;
+    if(esPBI){
+      return`<div onclick="openEmbed('SHARF · ${r.name.replace(/'/g,"\\'")}','${urlEsc}','${r.tipo}')" title="Abrir ${r.name}" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 13px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${border};background:#fff;color:${col};transition:all .15s;" onmouseover="this.style.background='${hoverBg}';this.style.color='${hoverCol}';" onmouseout="this.style.background='#fff';this.style.color='${col}';">${inner}</div>`;
+    }
+    // Google Sites no permite embeberse en iframes — abrir en pestaña nueva
+    return`<a href="${r.url}" target="_blank" rel="noopener noreferrer" title="Abrir ${r.name} en pestaña nueva" style="display:flex;align-items:center;gap:6px;font-size:11px;padding:6px 13px;border-radius:20px;cursor:pointer;font-weight:600;border:1px solid ${border};background:#fff;color:${col};transition:all .15s;text-decoration:none;" onmouseover="this.style.background='${hoverBg}';this.style.color='${hoverCol}';" onmouseout="this.style.background='#fff';this.style.color='${col}';">${inner}</a>`;
   }).join('');
   return`<div id="sc-pl-block" style="background:#fff;border-radius:3px;padding:16px 18px;margin-top:14px;border-top:3px solid #F2C811;scroll-margin-top:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
@@ -2995,7 +3063,7 @@ async function generarConclusiones(){
 // ===================== RENDER ENGINE =====================
 function renderView(view){
   destroyCharts();currentView=view;
-  const tasks=TASKS;
+  const tasks=(Array.isArray(TASKS)?TASKS:[]).concat(Array.isArray(TASKS_EQUIPO)?TASKS_EQUIPO:[]);
   let html='';
   if(view==='calendario') html=viewCalendario(tasks);
   else if(view==='recurrentes') html=viewRecurrentes();
