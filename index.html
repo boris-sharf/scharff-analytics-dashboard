@@ -133,7 +133,7 @@ body{font-family:'Inter',sans-serif;background:#f0f0f0;min-height:100vh;}
 .radar-dot{width:7px;height:7px;border-radius:50%;background:var(--azul);}
 .rleg{display:flex;align-items:center;gap:7px;font-size:11px;color:#555;}
 .rleg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-.radar-tooltip{position:absolute;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 3px 3px 0;padding:12px 14px;min-width:210px;max-width:250px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;}
+.radar-tooltip{position:absolute;background:#fff;border:0.5px solid #e0e0e0;border-left:3px solid #0d1b86;border-radius:0 3px 3px 0;padding:12px 14px;min-width:210px;max-width:250px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999;max-height:calc(100vh - 16px);overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,.13);}
 
 .sc-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
 .sc-scard{background:#fff;border-radius:3px;padding:14px 16px;border-top:3px solid #ddd;}
@@ -1297,8 +1297,8 @@ const KPI_UM={
   },
   INLOG:{
     'Alumnos pregrado':'ent:alumnos','Alumnos Ed. Continua':'ent:alumnos','Ingreso total':'pen',
-    'Ingreso Pregrado':'pen','Ingreso Ed. Continua':'pen','Ingreso Inhouse':'pen','Margen bruto':'pen',
-    'Vacaciones ejecutadas':'ent:días','Satisfacción empleados':'pct','Satisfacción docentes':'pct'
+    'Ingreso Pregrado':'pen','Ingreso Ed. Continua':'pen','Ingreso Inhouse':'pen','Utilidad Bruta':'pen',
+    'Vacaciones ejecutadas':'ent:días','Satisfacción empleados':'pct'
   },
   SHARF:{
     'Ingresos Netos':'penMill','EBITDA':'penMill','MB Aduanas':'pct','Ing. Carga Int.':'penMill',
@@ -1357,7 +1357,7 @@ const KPI_AGG={
   },
   INLOG:{
     'Alumnos Ed. Continua':'last','Alumnos pregrado':'last','Satisfacción empleados':'avg',
-    'Ingreso Ed. Continua':'sum','Margen bruto':'sum','Ingreso total':'sum','Ingreso Pregrado':'sum',
+    'Ingreso Ed. Continua':'sum','Utilidad Bruta':'sum','Ingreso total':'sum','Ingreso Pregrado':'sum',
     'Ingreso Inhouse':'sum','Vacaciones ejecutadas':'last'
   },
   INMUEBLES:{
@@ -1408,6 +1408,14 @@ const KPI_PESO={
   }
 };
 function kpiPeso(emp,kpi){return (KPI_PESO[emp]&&KPI_PESO[emp][kpi])||1;}
+// Orden manual de KPIs dentro de cada pilar (por empresa). Los no listados van después, ordenados por cumplimiento.
+const KPI_ORDEN={
+  INLOG:{
+    'Alumnos pregrado':1,'Alumnos Ed. Continua':2,
+    'Ingreso total':1,'Ingreso Pregrado':2,'Ingreso Ed. Continua':3,'Ingreso Inhouse':4,'Utilidad Bruta':5
+  }
+};
+function kpiOrden(emp,kpi){const m=KPI_ORDEN[emp];return (m&&m[kpi]!==undefined)?m[kpi]:999;}
 // Promedio ponderado de cumplimientos: recibe pares [kpiName, pct] (pct no nulo)
 function pctPonderado(emp,pares){
   let sw=0,swp=0;
@@ -1509,15 +1517,15 @@ const SC_EMPRESAS={
   }},
   INLOG:{label:'INLOG — Educación',years:{
     2025:{
-      Octubre:{'Alumnos pregrado':{t:290,r:214,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:55,r:26,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:143534,r:92881,p:'Valor',u:'money'},'Margen bruto':{t:93783,r:35764,p:'Valor',u:'money'},'Ingreso Inhouse':{t:10000,r:4600,p:'Valor',u:'money'}},
-      Noviembre:{'Alumnos pregrado':{t:281,r:207,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:38,r:101,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:132763,r:100638,p:'Valor',u:'money'},'Margen bruto':{t:78478,r:49952,p:'Valor',u:'money'},'Ingreso Inhouse':{t:10000,r:1008,p:'Valor',u:'money'}},
-      Diciembre:{'Alumnos pregrado':{t:262,r:205,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:0,r:14,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:106613,r:100100,p:'Valor',u:'money'},'Margen bruto':{t:64596,r:49032,p:'Valor',u:'money'},'Ingreso Inhouse':{t:0,r:15023,p:'Valor',u:'money'}},
+      Octubre:{'Alumnos pregrado':{t:290,r:214,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:55,r:26,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:143534,r:92881,p:'Valor',u:'money'},'Utilidad Bruta':{t:93783,r:35764,p:'Valor',u:'money'},'Ingreso Inhouse':{t:10000,r:4600,p:'Valor',u:'money'}},
+      Noviembre:{'Alumnos pregrado':{t:281,r:207,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:38,r:101,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:132763,r:100638,p:'Valor',u:'money'},'Utilidad Bruta':{t:78478,r:49952,p:'Valor',u:'money'},'Ingreso Inhouse':{t:10000,r:1008,p:'Valor',u:'money'}},
+      Diciembre:{'Alumnos pregrado':{t:262,r:205,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:0,r:14,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:106613,r:100100,p:'Valor',u:'money'},'Utilidad Bruta':{t:64596,r:49032,p:'Valor',u:'money'},'Ingreso Inhouse':{t:0,r:15023,p:'Valor',u:'money'}},
     },
     2026:{
-      Enero:{'Alumnos Ed. Continua':{t:10,r:16,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:19154,r:55788,p:'Valor',u:'money'},'Ingreso Pregrado':{t:12267,r:31685,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:6888,r:4968,p:'Valor',u:'money'},'Ingreso Inhouse':{t:0,r:12656,p:'Valor',u:'money'},'Margen bruto':{t:16364,r:52638,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:533,r:256,p:'Salud',u:'num'}},
-      Febrero:{'Alumnos Ed. Continua':{t:35,r:51,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:31734,r:37302,p:'Valor',u:'money'},'Ingreso Pregrado':{t:3067,r:2881,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:14917,r:27151,p:'Valor',u:'money'},'Ingreso Inhouse':{t:13750,r:4200,p:'Valor',u:'money'},'Margen bruto':{t:21044,r:31972,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:558,r:305,p:'Salud',u:'num'}},
-      Marzo:{'Alumnos pregrado':{t:326,r:274,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:35,r:76,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:144374,r:102319,p:'Valor',u:'money'},'Ingreso Pregrado':{t:97628,r:57774,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:15283,r:30030,p:'Valor',u:'money'},'Ingreso Inhouse':{t:30000,r:0,p:'Valor',u:'money'},'Margen bruto':{t:135070,r:95207,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:586,r:435,p:'Salud',u:'num'},'Satisfacción empleados':{t:85,r:95,p:'Equipo Feliz',u:'pct'},'Satisfacción docentes':{t:75,r:90,p:'Equipo Feliz',u:'pct'}},
-      Abril:{'Alumnos pregrado':{t:248,r:250,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:55,r:153,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:180654,r:103054,p:'Valor',u:'money'},'Ingreso Pregrado':{t:113277,r:73794,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:25914,r:19025,p:'Valor',u:'money'},'Ingreso Inhouse':{t:40000,r:0,p:'Valor',u:'money'},'Margen bruto':{t:123398,r:70623,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:620,r:544,p:'Salud',u:'num'}},
+      Enero:{'Alumnos Ed. Continua':{t:10,r:16,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:19154,r:55788,p:'Valor',u:'money'},'Ingreso Pregrado':{t:12267,r:31685,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:6888,r:4968,p:'Valor',u:'money'},'Ingreso Inhouse':{t:0,r:12656,p:'Valor',u:'money'},'Utilidad Bruta':{t:16364,r:52638,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:533,r:256,p:'Salud',u:'num'}},
+      Febrero:{'Alumnos Ed. Continua':{t:35,r:51,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:31734,r:37302,p:'Valor',u:'money'},'Ingreso Pregrado':{t:3067,r:2881,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:14917,r:27151,p:'Valor',u:'money'},'Ingreso Inhouse':{t:13750,r:4200,p:'Valor',u:'money'},'Utilidad Bruta':{t:21044,r:31972,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:558,r:305,p:'Salud',u:'num'}},
+      Marzo:{'Alumnos pregrado':{t:326,r:274,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:35,r:76,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:144374,r:102319,p:'Valor',u:'money'},'Ingreso Pregrado':{t:97628,r:57774,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:15283,r:30030,p:'Valor',u:'money'},'Ingreso Inhouse':{t:30000,r:0,p:'Valor',u:'money'},'Utilidad Bruta':{t:135070,r:95207,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:586,r:435,p:'Salud',u:'num'},'Satisfacción empleados':{t:85,r:95,p:'Equipo Feliz',u:'pct'}},
+      Abril:{'Alumnos pregrado':{t:248,r:250,p:'Cliente Feliz',u:'num'},'Alumnos Ed. Continua':{t:55,r:153,p:'Cliente Feliz',u:'num'},'Ingreso total':{t:180654,r:103054,p:'Valor',u:'money'},'Ingreso Pregrado':{t:113277,r:73794,p:'Valor',u:'money'},'Ingreso Ed. Continua':{t:25914,r:19025,p:'Valor',u:'money'},'Ingreso Inhouse':{t:40000,r:0,p:'Valor',u:'money'},'Utilidad Bruta':{t:123398,r:70623,p:'Valor',u:'money'},'Vacaciones ejecutadas':{t:620,r:544,p:'Salud',u:'num'}},
     }
   }},
   SHARF:{label:'SHARF — Logística',years:{
@@ -2921,6 +2929,8 @@ function buildScorecard(){
 
   for(const pilar of SC_PILARES){
     const kpisP=Object.entries(agg).filter(([,v])=>v.p===pilar).sort((a,b)=>{
+      const oa=kpiOrden(scEmp,a[0]),ob=kpiOrden(scEmp,b[0]);
+      if(oa!==ob)return oa-ob; // orden manual primero
       const pa=a[1].pct===null?-1:a[1].pct;
       const pb=b[1].pct===null?-1:b[1].pct;
       return pb-pa;
@@ -3035,7 +3045,10 @@ async function generarConclusionesGeneral(){
     const kpis=Object.entries(map).filter(([,v])=>v.pcts.length>0).map(([k,v])=>{const avg=v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length;const estado=avg>=95?'CUMPLIDO':avg>=80?'EN RIESGO':'INCUMPLIDO';return`  - ${k}: ${Math.round(avg)}% — ${estado}`;}).join('\n');
     return`${emp}:\n${kpis}`;
   }).join('\n\n');
-  const prompt=`Eres analista del Holding La Rama. Analiza el desempeño consolidado de las 4 empresas del holding y genera un análisis ejecutivo en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- 3 párrafos: (1) visión general del holding, (2) empresas y KPIs más críticos con cifras, (3) fortalezas destacadas y recomendación prioritaria.\n- Lenguaje directo y ejecutivo. Sin bullet points ni encabezados.\n- Máximo 200 palabras.`;
+  const yrGen=Math.max(...EMPRESAS.map(emp=>{const ys=Object.keys(SC_EMPRESAS[emp].years).map(Number);return Math.max(...ys);}));
+  const mesesGen=SC_MESES_ORD.filter(m=>(SC_EMPRESAS.QEMA.years[yrGen]||{})[m]);
+  const periodoGen=mesesGen.length?`${mesesGen.join(', ')} de ${yrGen}`:String(yrGen);
+  const prompt=`Eres analista del Holding La Rama. Analiza el desempeño consolidado de las empresas del holding y genera un análisis ejecutivo en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- 3 párrafos: (1) visión general del holding que COMIENCE mencionando explícitamente los meses analizados (${periodoGen}) — nombra los meses, nunca digas solo el año, (2) empresas y KPIs más críticos con cifras, (3) fortalezas destacadas y recomendación prioritaria.\n- Haz énfasis en el P&L de las empresas (ingresos, márgenes, EBITDA/utilidad).\n- Lenguaje directo y ejecutivo. Sin bullet points ni encabezados.\n- Máximo 200 palabras.`;
   try{
     const res=await fetch('https://admin-inlog.app.n8n.cloud/webhook/claude-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
@@ -3056,15 +3069,15 @@ async function generarConclusiones(){
   out.innerHTML=`<div class="conclusiones-loading"><div class="loading-dots"><span></span><span></span><span></span></div> Claude está analizando los datos...</div>`;
 
   const agg=scGetAgg();
-  const meses=scGetMeses(scYear);
-  const periodo=scMes==='all'?(meses.length>0?`${meses[0]}–${meses[meses.length-1]} ${scYear}`:String(scYear)):`${scMes} ${scYear}`;
+  const mesesSel=scIsAllMeses()?scGetMeses(scYear):SC_MESES_ORD.filter(m=>scMes.includes(m));
+  const periodo=mesesSel.length===0?String(scYear):(mesesSel.length===1?`${mesesSel[0]} de ${scYear}`:`${mesesSel.join(', ')} de ${scYear}`);
   const moneda=MONEDA[scEmp];
   const lineas=Object.entries(agg).filter(([,v])=>v.pct!==null).map(([k,v])=>{
     const estado=v.pct>=95?'CUMPLIDO':v.pct>=80?'EN RIESGO':'INCUMPLIDO';
     return`- ${k}: Real ${kpiFmt(v.lastR,scEmp,k,v.u)} vs Target ${kpiFmt(v.lastT,scEmp,k,v.u)} (${Math.round(v.pct)}% de cumplimiento) — ${estado}`;
   }).join('\n');
 
-  const prompt=`Eres el analista de datos del Holding La Rama. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño que COMIENCE mencionando explícitamente el período analizado (${periodo}), (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- HAZ ÉNFASIS ESPECIAL EN EL P&L: prioriza y profundiza en los indicadores financieros (ingresos, márgenes, EBITDA y/o utilidad operativa) — comenta su nivel, la brecha frente al presupuesto y su lectura para el negocio antes que otros KPIs.\n- Reitera el período (${periodo}) al dar cifras clave para que quede claro a qué corte corresponden.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 190 palabras en total.`;
+  const prompt=`Eres el analista de datos del Holding La Rama. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño que COMIENCE mencionando explícitamente los meses analizados (${periodo}) — nombra los meses, nunca digas solo el año, (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- HAZ ÉNFASIS ESPECIAL EN EL P&L: prioriza y profundiza en los indicadores financieros (ingresos, márgenes, EBITDA y/o utilidad operativa) — comenta su nivel, la brecha frente al presupuesto y su lectura para el negocio antes que otros KPIs.\n- Reitera los meses analizados (${periodo}) al dar cifras clave para que quede claro a qué corte corresponden; nunca uses solo el año.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 190 palabras en total.`;
 
   try{
     const res=await fetch('https://admin-inlog.app.n8n.cloud/webhook/claude-proxy',{
@@ -3161,15 +3174,17 @@ function renderView(view){
               <div style="font-size:9px;color:#aaa;margin-bottom:8px;display:flex;justify-content:flex-end;gap:6px;">por KPI: Real · Target · <span style="font-weight:600;">% Cumpl.</span></div>
               ${rows}`;
             tt.style.opacity='1';
-            const svgRect=svgEl.getBoundingClientRect();
-            const wrap=tt.parentElement.getBoundingClientRect();
-            const scaleX=svgRect.width/500;
-            const cx2=parseFloat(c.getAttribute('cx'))*scaleX+(svgRect.left-wrap.left);
-            const cy2=parseFloat(c.getAttribute('cy'))*scaleX+(svgRect.top-wrap.top);
-            let left=cx2+16;
-            let top=cy2-30;
-            if(left+260>wrap.width)left=cx2-270;
-            if(top<0)top=4;
+            tt.style.position='fixed';
+            tt.style.right='auto';
+            const rect=c.getBoundingClientRect();
+            const ttRect=tt.getBoundingClientRect();
+            const vw=window.innerWidth,vh=window.innerHeight;
+            let left=rect.right+14;            // siempre a la derecha del vértice
+            let top=rect.top+rect.height/2-ttRect.height/2;
+            if(left+ttRect.width>vw-8)left=vw-ttRect.width-8; // si no cabe, pegar al borde derecho (sigue visible)
+            if(left<8)left=8;
+            if(top<8)top=8;
+            if(top+ttRect.height>vh-8)top=vh-ttRect.height-8;
             tt.style.left=left+'px';
             tt.style.top=top+'px';
           });
@@ -3217,13 +3232,17 @@ function renderView(view){
             }).join('');}
             tt2.innerHTML=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;"><div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;"></div><span style="font-size:12px;font-weight:600;color:#222;">${d.pilar}</span>${d.pct!==null?`<span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;"><span style="font-size:8px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.3px;">Cumpl.</span><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:${bg};color:${tc};">${Math.round(d.pct)}%</span></span>`:''}</div><div style="font-size:9px;color:#aaa;margin-bottom:8px;display:flex;justify-content:flex-end;gap:6px;">por KPI: Real · Target · <span style="font-weight:600;">% Cumpl.</span></div>${rows}`;
             tt2.style.opacity='1';
-            const svgRect2=svgEl2.getBoundingClientRect();
-            const wrap2=tt2.parentElement.getBoundingClientRect();
-            const scaleX2=svgRect2.width/260;
-            const cx3=parseFloat(c.getAttribute('cx'))*scaleX2+(svgRect2.left-wrap2.left);
-            const cy3=parseFloat(c.getAttribute('cy'))*scaleX2+(svgRect2.top-wrap2.top);
-            let left2=cx3+14;let top2=cy3-25;
-            if(left2+230>wrap2.width)left2=cx3-240;if(top2<0)top2=4;
+            tt2.style.position='fixed';
+            tt2.style.right='auto';
+            const rect2=c.getBoundingClientRect();
+            const ttRect2=tt2.getBoundingClientRect();
+            const vw2=window.innerWidth,vh2=window.innerHeight;
+            let left2=rect2.right+12;            // siempre a la derecha del vértice
+            let top2=rect2.top+rect2.height/2-ttRect2.height/2;
+            if(left2+ttRect2.width>vw2-8)left2=vw2-ttRect2.width-8;
+            if(left2<8)left2=8;
+            if(top2<8)top2=8;
+            if(top2+ttRect2.height>vh2-8)top2=vh2-ttRect2.height-8;
             tt2.style.left=left2+'px';tt2.style.top=top2+'px';
           });
           c.addEventListener('mouseleave',function(){tt2.style.opacity='0';});
