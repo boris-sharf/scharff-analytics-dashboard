@@ -1090,7 +1090,7 @@ const LINKS_DATA={
       {name:'SG&A',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/finanzas/planeamiento-financiero/tableros-de-control',type:'Sitio',cat:'Financiero'},
       {name:'Facturación',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/finanzas/facturaci%C3%B3n/tablero-de-facturaci%C3%B3n',type:'Sitio',cat:'Salud'},
       {name:'Satisfacción Cliente Externo',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/control-de-gesti%C3%B3n/experiencia-cliente/satisfacci%C3%B3n-del-cliente-externo',type:'Sitio',cat:'Comercial'},
-      {name:'Satisfacción Cliente Interno',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/control-de-gesti%C3%B3n/experiencia-cliente/satisfacci%C3%B3n-del-cliente-interno',type:'Sitio',cat:'Comercial'},
+      {name:'Satisfacción Cliente Interno',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/control-de-gesti%C3%B3n/experiencia-cliente/satisfacci%C3%B3n-del-cliente-interno',type:'Sitio',cat:'Equipo'},
       {name:'Gestión Comercial Hubspot',url:'https://script.google.com/a/macros/holasharf.com/s/AKfycbyl1pIpny33Y4uAq72kFQ7hv9ppcRR9Lxvd9BK500_mAktU_UOr7DhdBeyaJiigKCXU/exec',type:'Sitio',cat:'Comercial'},
       {name:'Proyectos Logísticos',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/proyectos-logisticos/pricing-proyectos-log%C3%ADsticos',type:'Sitio',cat:'Operaciones'},
       {name:'COMEX',url:'https://sites.google.com/holasharf.com/portal-reportes-sharf/inicio/comex',type:'Sitio',cat:'Operaciones'},
@@ -1742,7 +1742,7 @@ function scGetAgg(){
       aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0)/v.targets.length:null;
       pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
     }
-    res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:metodo};
+    res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:(metodo==='avg'?(v.pcts.length||v.reals.length):Math.max(v.reals.length,v.targets.length,v.pcts.length)),aggMode:metodo};
   }
   return res;
 }
@@ -1837,7 +1837,7 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
 
   pilarData.forEach((d,i)=>{
     const[vx,vy]=polyPts[i];
-    const col=COLS[d.cls];
+    const col='#0d1b86';
     circles+=`<circle cx="${vx}" cy="${vy}" r="7" fill="${col}" stroke="#fff" stroke-width="2.5" style="cursor:pointer;" data-pilar="${d.pilar}"/>`;
     const[lx,ly]=pt(R+26,angles[i]);
     const anchor=Math.abs(Math.cos(angles[i]))<0.1?'middle':Math.cos(angles[i])>0?'start':'end';
@@ -1857,12 +1857,6 @@ function buildRadarAlertasSplit(aggData,empName,alertas,periodo){
         ${circles}${labels}${pctLabels}
       </svg>
       <div class="radar-tooltip" id="sc-radar-tt"></div>
-    </div>
-    <div style="display:flex;justify-content:center;gap:12px;margin-top:8px;flex-wrap:wrap;">
-      <div class="rleg"><div class="rleg-sq" style="background:#22a869;"></div>≥95%</div>
-      <div class="rleg"><div class="rleg-sq" style="background:#f5a623;"></div>80–94%</div>
-      <div class="rleg"><div class="rleg-sq" style="background:#b62e2e;"></div>&lt;80%</div>
-      <div class="rleg"><div class="rleg-sq" style="background:#ccc;"></div>S/D</div>
     </div>
   </div>`;
 
@@ -2080,6 +2074,16 @@ function buildHeatmap(emp,year){
   </div>`;
 }
 
+// Leyenda del semáforo de cumplimiento (se muestra al inicio de las secciones con colores)
+function scLeyendaColores(){
+  return`<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border-radius:3px;padding:9px 14px;margin-bottom:12px;border-left:3px solid #0d1b86;">
+    <span style="font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#999;font-weight:700;">Semáforo de cumplimiento</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#444;"><span style="width:11px;height:11px;border-radius:50%;background:#22a869;display:inline-block;"></span>Cumplido (≥95%)</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#444;"><span style="width:11px;height:11px;border-radius:50%;background:#f5a623;display:inline-block;"></span>En riesgo (80–94%)</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#444;"><span style="width:11px;height:11px;border-radius:50%;background:#b62e2e;display:inline-block;"></span>Incumplido (&lt;80%)</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#444;"><span style="width:11px;height:11px;border-radius:50%;background:#ccc;display:inline-block;"></span>Sin dato</span>
+  </div>`;
+}
 function buildScorecardGeneral(){
   const EMPRESAS=['QEMA','INLOG','ARDE','SHARF','INMUEBLES'];
   const EMP_COLORS={QEMA:'#69231e',INLOG:'#0d1b86',ARDE:'#000000',SHARF:'#ff6568',INMUEBLES:'#74579D'};
@@ -2127,7 +2131,7 @@ function buildScorecardGeneral(){
         aggT=v.targets.length>0?v.targets.reduce((a,b)=>a+b,0)/v.targets.length:null;
         pct=v.pcts.length>0?v.pcts.reduce((a,b)=>a+b,0)/v.pcts.length:null;
       }
-      res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:v.pcts.length,aggMode:metodo};
+      res[k]={p:v.p,inv:v.inv,u:v.u,pct,lastT:v.lastT,lastR:v.lastR,prevR:v.prevR,aggR,aggT,nMeses:(metodo==='avg'?(v.pcts.length||v.reals.length):Math.max(v.reals.length,v.targets.length,v.pcts.length)),aggMode:metodo};
     }
     return{agg:res,year:scGenYear,meses,yData};
   }
@@ -2176,7 +2180,7 @@ function buildScorecardGeneral(){
     const empCol=EMP_COLORS[emp];
     pilarData.forEach((d,i)=>{
       const[vx,vy]=polyPts[i];
-      const col=COLS[d.cls];
+      const col=empCol;
       circles+=`<circle cx="${vx}" cy="${vy}" r="6" fill="${col}" stroke="#fff" stroke-width="2" style="cursor:pointer;" data-pilar="${d.pilar}" data-emp="${emp}"/>`;
       const[lx,ly]=pt(R+22,angles[i]);
       const anchor=Math.abs(Math.cos(angles[i]))<0.1?'middle':Math.cos(angles[i])>0?'start':'end';
@@ -2362,6 +2366,8 @@ function buildScorecardGeneral(){
 
   return`
     ${filtrosHtml}
+
+    ${scLeyendaColores()}
 
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;">${radares}</div>
 
@@ -2888,6 +2894,8 @@ function buildScorecard(){
     </div>`:''}
 `;
 
+  html+=scLeyendaColores();
+
   const {radarHtml,alertasHtml2}=buildRadarAlertasSplit(agg,scEmp,alertas,periodo);
 
   html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;align-items:stretch;">
@@ -3056,7 +3064,7 @@ async function generarConclusiones(){
     return`- ${k}: Real ${kpiFmt(v.lastR,scEmp,k,v.u)} vs Target ${kpiFmt(v.lastT,scEmp,k,v.u)} (${Math.round(v.pct)}% de cumplimiento) — ${estado}`;
   }).join('\n');
 
-  const prompt=`Eres el analista de datos del Holding La Rama. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño, (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 180 palabras en total.`;
+  const prompt=`Eres el analista de datos del Holding La Rama. Analiza los siguientes KPIs de ${scEmp} para el período ${periodo} y genera un análisis ejecutivo conciso en español.\n\nDATOS:\n${lineas}\n\nINSTRUCCIONES:\n- Escribe 3 párrafos cortos: (1) resumen general del desempeño que COMIENCE mencionando explícitamente el período analizado (${periodo}), (2) los 2-3 puntos más críticos o preocupantes con cifras concretas, (3) los puntos positivos destacables y una recomendación de acción prioritaria.\n- HAZ ÉNFASIS ESPECIAL EN EL P&L: prioriza y profundiza en los indicadores financieros (ingresos, márgenes, EBITDA y/o utilidad operativa) — comenta su nivel, la brecha frente al presupuesto y su lectura para el negocio antes que otros KPIs.\n- Reitera el período (${periodo}) al dar cifras clave para que quede claro a qué corte corresponden.\n- Usa lenguaje directo y ejecutivo, sin tecnicismos.\n- Menciona cifras reales (${moneda}) al hablar de cada KPI.\n- No uses bullet points ni encabezados, solo párrafos fluidos.\n- Máximo 190 palabras en total.`;
 
   try{
     const res=await fetch('https://admin-inlog.app.n8n.cloud/webhook/claude-proxy',{
