@@ -1341,6 +1341,15 @@ function evoAxisFmt(v,emp,kpi,uFallback){
 }
 
 function kpiUM(emp,kpi){return (KPI_UM[emp]&&KPI_UM[emp][kpi])||null;}
+// KPIs de venta/ingreso que se muestran SIN decimales (números enteros)
+const KPI_ENTERO={
+  QEMA:['Revenue'],
+  INLOG:['Ingreso total','Ingreso Pregrado','Ingreso Ed. Continua','Ingreso Inhouse'],
+  ARDE:['Revenue EQA','Revenue Home','Rev Home B2C','Rev Home B2B'],
+  SHARF:['Ingresos Netos','FedEx Revenue'],
+  INMUEBLES:['Ingreso Cedros','Ingreso Calle B']
+};
+function kpiEsEntero(emp,kpi){return !!(KPI_ENTERO[emp]&&KPI_ENTERO[emp].includes(kpi));}
 // Método de agregación por KPI cuando hay varios meses: 'sum', 'avg' o 'last' (último periodo con dato)
 // Si un KPI no está listado, se usa el default: money no invertido -> sum, resto -> avg
 const KPI_AGG={
@@ -1428,6 +1437,16 @@ function kpiFmt(v,emp,kpi,uFallback){
   let um=kpiUM(emp,kpi);
   if(!um||um==='auto')um=null; // auto y sin-dicc usan el comportamiento por uFallback
   const numK=(val,cur)=>{const a=Math.abs(val);const s=val<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,2)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,2)}K`;return`${s}${cur}${scNum(val,2)}`;};
+  // KPIs de venta: forzar enteros (sin decimales), incluso en millones
+  if(kpiEsEntero(emp,kpi)){
+    const numKent=(val,cur)=>{const a=Math.abs(val);const s=val<0?'-':'';if(a>=1000000)return`${s}${cur}${scNum(a/1000000,0)}M`;if(a>=1000)return`${s}${cur}${scNum(a/1000,0)}K`;return`${s}${cur}${scNum(val,0)}`;};
+    if(um==='usd')return numKent(v,'$');
+    if(um==='pen')return numKent(v,'S/');
+    if(um==='usdMiles')return numKent(v,'US$');
+    if(um==='penMill')return `S/${scNum(v,0)}M`;
+    if(um==='usdMill')return `US$${scNum(v,0)}M`;
+    return numKent(v,MONEDA[emp]||'');
+  }
   switch(um){
     case 'pct':return scNum(v,2)+'%';
     case 'usd':return numK(v,'$');
